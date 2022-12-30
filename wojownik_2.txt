@@ -1,0 +1,2 @@
+MOV 0, 1         ; this was just executed
+MOV 0, 1         ; this instruction will be executed next
