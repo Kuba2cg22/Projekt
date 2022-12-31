@@ -1,6 +1,6 @@
 # +=''dD""{}
 
-core_1 = []
+
 
 
 class Warrior:
@@ -19,9 +19,6 @@ class Warrior:
                         line[index] = element.replace(',', '')
                 self._list_of_instructions.append(line)
 
-    # def instructions(self):
-    #     for instruction in self._list_of_instructions:
-    #         return instruction
 
     def DAT(self, instuction):
         pass
@@ -88,6 +85,13 @@ class Game:
         self._warriors = warriors if warriors else []
         self._core = core if core else []
 
+    def add_warrior(self, warrior):
+        warriors.append(warrior)
+
+    def remove_warrior(self, warrior):
+        warriors.remove(warrior)
+
+
     def play(self):
         for warrior in warriors:
             for instruction in warrior._list_of_instructions:
@@ -98,13 +102,15 @@ class Game:
             print('Next warrior')
 
 
+
 warrior_1 = Warrior('wojownik_1.txt')
 warrior_2 = Warrior('wojownik_2.txt')
-warriors = [warrior_1, warrior_2]
+warriors = [warrior_1]
+core_1 = []
 
 game = Game(warriors, core_1)
+game.add_warrior(warrior_2)
+game.remove_warrior(warrior_1)
 
 game.play()
-# i = warrior_1.instructions()
 
-# print(i)
