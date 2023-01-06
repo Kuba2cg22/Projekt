@@ -5,7 +5,49 @@ class IncorectPath(Exception):
 
 class NoWarriorInGame(Exception):
     pass
-    
+
+class Core:
+    def __init__(self, size):
+        self.memory = [0] * size
+
+    def visualize(self):
+        # implementacja wizualizacji stanu rdzenia
+        pass
+
+    def execute_instruction(self, instruction):
+        # implementacja wykonywania instrukcji na rdzeniu
+        # method = getattr(warrior, mnemonic)
+        # method(instruction)
+        pass
+
+
+class Instruction:
+    def __init__(self, mnemonic, modifier, operands, comment):
+        self.mnemonic = mnemonic
+        self.modifier = modifier
+        self.operands = operands
+        self.comment = comment
+
+    def mnemonic(self):
+        return self.mnemonic
+
+    def modifier(self):
+        return self.modifier
+
+    def operands(self):
+        return self.operands
+
+    def comment(self):
+        return self.comment
+
+
+class Operand:
+    def __init__(self, mode, value):
+        self.mode = mode
+        self.value = value
+
+    def mode_value(self):
+        return [self.mode, self.value]
 
 
 class Warrior:
@@ -14,18 +56,47 @@ class Warrior:
     '''
     def __init__(self, path) -> None:
         self._list_of_instructions = []
-        try:
-            with open(path, 'r') as file_handle:
-                for line in file_handle:
-                    line = line.rstrip().split()
-                    for index, element in enumerate(line):
-                        if element == ';':
-                            line = line[0:index]  # removes comments
-                        if ',' in element:
-                            line[index] = element.replace(',', '')
-                    self._list_of_instructions.append(line)
-        except:
-            raise IncorectPath
+        # try:
+        with open(path, 'r') as file_handle:
+            for line in file_handle:
+                line = line.rstrip().split()
+                mnemonic = line[0][:3]
+                modifier = line[0][3:]
+                try:
+                    if ',' in line[1]:
+                        line[1] = line[1].replace(',', '')
+                    try:
+                        int(line[1])
+                        mode_1 = None
+                        value_1 = line[1]
+                    except ValueError:
+                        mode_1 = line[1][0]
+                        value_1 = line[1][1:]
+                    operand_1 = Operand(mode_1, value_1)
+                except IndexError:
+                    operand_1 = Operand(None, None)
+                try:
+                    try:
+                        int(line[2])
+                        mode_2 = None
+                        value_2 = line[2]
+                    except ValueError:
+                        mode_2 = line[2][0]
+                        value_2 = line[2][1:]
+                    operand_2 = Operand(mode_2, value_2)
+                except IndexError:
+                    operand_2 = Operand(None, None)
+                operands = [operand_1, operand_2]
+                if ';' in line:
+                    comment = ' '.join(line[line.index(';') + 1:])
+                else:
+                    comment = None
+                instruction = Instruction(mnemonic, modifier, operands, comment)
+                # Core.execute_instruction(instruction)
+
+                self._list_of_instructions.append([mnemonic, modifier, [operand_1.mode_value(), operand_2.mode_value()], comment])
+        # except:
+        #     raise IncorectPath
 
 
     def DAT(self, instuction):
@@ -108,7 +179,7 @@ class Game:
             for warrior in self._warriors:
                 for instruction in warrior._list_of_instructions:
                     mnemonic = instruction[0]
-                    print(instruction, mnemonic)
+                    print(instruction)
                     method = getattr(warrior, mnemonic)
                     method(instruction)
                 print('Next warrior')
@@ -119,14 +190,16 @@ class Game:
 
 # warrior_1 = Warrior('wojownik_1.txt')
 # warrior_2 = Warrior('wojownik_2.txt')
-# warriors = [warrior_1]
-# core_1 = []
+warrior_3 = Warrior('wojownik_3.txt')
 
-# game = Game(warriors, core_1)
-# # game.add_warrior(warrior_2)
-# # game.remove_warrior(warrior_1)
+warriors = [warrior_3]
+core_1 = []
+
+game = Game(warriors, core_1)
+# game.add_warrior(warrior_2)
+# game.remove_warrior(warrior_1)
 
 
-# game.play()
+game.play()
 
 # print(warrior_1._list_of_instructions)
