@@ -56,6 +56,9 @@ class Instruction:
     def comment(self):
         return self.comment
 
+    def run_instruction(self):
+        pass
+
 
 class Operand:
     def __init__(self, mode, value):
@@ -93,10 +96,13 @@ class Warrior:
 
     def instructions(self):
         self._list_of_instructions = []
+        self._list_of_raw_instructions = []
         try:
             with open(self.path, 'r') as file_handle:
                 for line in file_handle:
-                    line = line.rstrip().split()
+                    line = line.rstrip()
+                    self._list_of_raw_instructions.append(line)
+                    line = line.split()
                     mnemonic = line[0][:3]
                     modifier = line[0][3:]
                     try:
@@ -132,7 +138,7 @@ class Warrior:
                     self._list_of_instructions.append([mnemonic, modifier, operand_1.mode_value(), operand_2.mode_value(), comment])
         except:
             raise IncorectPath
-        return self._list_of_instructions
+        return self._list_of_raw_instructions
 
 
     def o():
