@@ -14,7 +14,7 @@ class WrongPosition(Exception):
 class Core:
     def __init__(self, size):
         self.size = size
-        self.memory = [0] * size
+        self.memory = ['NOP'] * size
 
     def size(self):
         return self.size
@@ -29,12 +29,16 @@ class Core:
             a += i
             b += i
 
+    def put_instruction_into_core(self, instruction, position):
+        self.memory[position] = instruction
+
+
     def execute_instruction(self, instruction, position):
         # implementacja wykonywania instrukcji na rdzeniu
         # method = getattr(warrior, mnemonic)
         # method(instruction)
-        self.memory[position] = instruction
-
+        # self.memory[position] = instruction
+        pass
 
 
 class Instruction:
@@ -101,7 +105,7 @@ class Warrior:
             with open(self.path, 'r') as file_handle:
                 for line in file_handle:
                     line = line.rstrip()
-                    self._list_of_raw_instructions.append(line)
+                    # self._list_of_raw_instructions.append(line)
                     line = line.split()
                     mnemonic = line[0][:3]
                     modifier = line[0][3:]
@@ -138,7 +142,7 @@ class Warrior:
                     self._list_of_instructions.append([mnemonic, modifier, operand_1.mode_value(), operand_2.mode_value(), comment])
         except:
             raise IncorectPath
-        return self._list_of_raw_instructions
+        return self._list_of_instructions
 
 
     def o():
@@ -223,18 +227,18 @@ class Game:
     def play(self):
         if self._warriors:
             for warrior in self._warriors:
-                start_position = warrior.position
+                actual_position = warrior.position
                 for instruction in warrior.instructions():
-                    if start_position == self._core.size:
-                        start_position = 0 # a co jak większa pozycja
-                    elif start_position not in range(self._core.size):
+                    if actual_position == self._core.size:
+                        actual_position = 0 # a co jak większa pozycja
+                    elif actual_position not in range(self._core.size):
                         raise WrongPosition
                     # mnemonic = instruction[0]
                     print(instruction)
-                    self._core.execute_instruction(instruction, start_position)
+                    self._core.put_instruction_into_core(instruction, actual_position)
                     # method = getattr(warrior, mnemonic)
                     # method(instruction)
-                    start_position += 1
+                    actual_position += 1
                 print('Next warrior')
         else:
             raise NoWarriorInGame
