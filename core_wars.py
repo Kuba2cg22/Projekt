@@ -14,31 +14,91 @@ class WrongPosition(Exception):
 class Core:
     def __init__(self, size):
         self.size = size
-        self.memory = ['NOP'] * size
+        self.memory = [['NOP', '', [None, None], [None, None], None]] * size
 
     def size(self):
         return self.size
 
     def visualize(self):
         # implementacja wizualizacji stanu rdzenia
-        i = int(sqrt(self.size))
-        a = 0
-        b = i
-        for x in range(i):
-            print(self.memory[a:b])
-            a += i
-            b += i
+        for index, register in enumerate(self.memory):
+            print(index, register)
+
 
     def put_instruction_into_core(self, instruction, position):
+        self.position = position
         self.memory[position] = instruction
 
 
-    def execute_instruction(self, instruction, position):
+    def execute_instructions(self):
         # implementacja wykonywania instrukcji na rdzeniu
-        # method = getattr(warrior, mnemonic)
-        # method(instruction)
-        # self.memory[position] = instruction
+
+        for register in self.memory:
+            mnemonic = register[0]
+            modifier = register[1]
+            mode_1 ,value_1 = register[2]
+            mode_2 ,value_2 = register[3]
+            method = getattr(Core, mnemonic)
+            method(self.memory[self.position])
+
+    def DAT(self):
         pass
+
+    def MOV(self):
+        pass
+
+    def ADD(self):
+        pass
+
+    def SUB(self):
+        pass
+
+    def MUL(self):
+        pass
+
+    def DIV(self):
+        pass
+
+    def MOD(self):
+        pass
+
+    def JMP(self):
+        pass
+
+    def JMZ(self):
+        pass
+
+    def JMN(self):
+        pass
+
+    def DJN(self):
+        pass
+
+    def SPL(self):
+        pass
+
+    def CMP(self):
+        pass
+
+    def SEQ(self):
+        pass
+
+    def SNE(self):
+        pass
+
+    def SLT(self):
+        pass
+
+    def LDP(self):
+        pass
+
+    def STP(self):
+        pass
+
+    def NOP(self):
+        pass
+
+
 
 
 class Instruction:
@@ -145,63 +205,7 @@ class Warrior:
         return self._list_of_instructions
 
 
-    def o():
-        def DAT(self, instuction):
-            pass
 
-        def MOV(self, instuction):
-            pass
-
-        def ADD(self, instuction):
-            pass
-
-        def SUB(self, instuction):
-            pass
-
-        def MUL(self, instuction):
-            pass
-
-        def DIV(self, instuction):
-            pass
-
-        def MOD(self, instuction):
-            pass
-
-        def JMP(self, instuction):
-            pass
-
-        def JMZ(self, instuction):
-            pass
-
-        def JMN(self, instuction):
-            pass
-
-        def DJN(self, instuction):
-            pass
-
-        def SPL(self, instuction):
-            pass
-
-        def CMP(self, instuction):
-            pass
-
-        def SEQ(self, instuction):
-            pass
-
-        def SNE(self, instuction):
-            pass
-
-        def SLT(self, instuction):
-            pass
-
-        def LDP(self, instuction):
-            pass
-
-        def STP(self, instuction):
-            pass
-
-        def NOP(self, instuction):
-            pass
 
 
 class Game:
@@ -239,6 +243,7 @@ class Game:
                     # method = getattr(warrior, mnemonic)
                     # method(instruction)
                     actual_position += 1
+                self._core.execute_instructions()
                 print('Next warrior')
         else:
             raise NoWarriorInGame
@@ -247,10 +252,11 @@ class Game:
 
 warrior_1 = Warrior('wojownik_1.txt','Jaś', 98)
 warrior_2 = Warrior('wojownik_2.txt','Asia', 100)
-warrior_3 = Warrior('wojownik_3.txt','Kuba', 10)
+warrior_3 = Warrior('wojownik_3.txt','Kuba', 1)
+warrior_4 = Warrior('wojownik_4.txt','Kuba', 10)
 
-warriors = [warrior_2]
-core_1 = Core(100)
+warriors = [warrior_3]
+core_1 = Core(10)
 
 game = Game(warriors, core_1)
 # game.add_warrior(warrior_2)
