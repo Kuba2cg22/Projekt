@@ -38,22 +38,29 @@ class Core:
     def execute_instructions(self):
         # implementacja wykonywania instrukcji na rdzeniu
 
-        for register in self.memory:
+        for index, register in enumerate(self.memory):
             mnemonic = register[0]
             modifier = register[1]
             mode_1 ,value_1 = register[2]
             mode_2 ,value_2 = register[3]
             method = getattr(self, mnemonic)
-            method(register)
+            method(register, index)
 
     def DAT(self):
         pass
 
-    def MOV(self, register):
+    def MOV(self, register, index):
         modifier = register[1]
         mode_1 ,value_1 = register[2]
         mode_2 ,value_2 = register[3]
-        self.memory[3] = self.memory[2]
+        destination_index = index + int(value_2)
+        source_index = index + int(value_1)
+        while destination_index >= Core.size(self):
+            destination_index -= Core.size(self)
+        while source_index >= Core.size(self):
+            source_index -= Core.size(self)
+        self.memory[destination_index] = self.memory[source_index]
+
 
 
     def ADD(self):
@@ -104,7 +111,7 @@ class Core:
     def STP(self):
         pass
 
-    def NOP(self, register):
+    def NOP(self, register, index):
         pass
 
 
@@ -250,6 +257,7 @@ class Game:
                     print(instruction)
                     self._core.put_instruction_into_core(instruction, actual_position)
                     actual_position += 1
+                self._core.execute_instructions() # aż nie przerwie
                 self._core.execute_instructions()
                 print('Next warrior')
         else:
@@ -263,7 +271,7 @@ warrior_3 = Warrior('wojownik_3.txt','Kuba', 1)
 warrior_4 = Warrior('wojownik_4.txt','Kuba', 10)
 
 warriors = [warrior_2]
-core_1 = Core(10)
+core_1 = Core(4)
 
 game = Game(warriors, core_1)
 # game.add_warrior(warrior_2)
