@@ -16,6 +16,8 @@ class Core:
         self.size = size
         self.memory = [['NOP', '', [None, None], [None, None], None]] * size
 
+
+
     def size(self):
         return self.size
 
@@ -29,6 +31,9 @@ class Core:
         self.position = position
         self.memory[position] = instruction
 
+    def next_position(self):
+        self.position += 1
+
 
     def execute_instructions(self):
         # implementacja wykonywania instrukcji na rdzeniu
@@ -38,14 +43,18 @@ class Core:
             modifier = register[1]
             mode_1 ,value_1 = register[2]
             mode_2 ,value_2 = register[3]
-            method = getattr(Core, mnemonic)
-            method(self.memory[self.position])
+            method = getattr(self, mnemonic)
+            method(register)
 
     def DAT(self):
         pass
 
-    def MOV(self):
-        pass
+    def MOV(self, register):
+        modifier = register[1]
+        mode_1 ,value_1 = register[2]
+        mode_2 ,value_2 = register[3]
+        self.memory[3] = self.memory[2]
+
 
     def ADD(self):
         pass
@@ -95,7 +104,7 @@ class Core:
     def STP(self):
         pass
 
-    def NOP(self):
+    def NOP(self, register):
         pass
 
 
@@ -231,17 +240,15 @@ class Game:
     def play(self):
         if self._warriors:
             for warrior in self._warriors:
-                actual_position = warrior.position
+                start_position = warrior.position
+                actual_position = start_position
                 for instruction in warrior.instructions():
                     if actual_position == self._core.size:
-                        actual_position = 0 # a co jak większa pozycja
+                        actual_position = 0
                     elif actual_position not in range(self._core.size):
                         raise WrongPosition
-                    # mnemonic = instruction[0]
                     print(instruction)
                     self._core.put_instruction_into_core(instruction, actual_position)
-                    # method = getattr(warrior, mnemonic)
-                    # method(instruction)
                     actual_position += 1
                 self._core.execute_instructions()
                 print('Next warrior')
@@ -250,12 +257,12 @@ class Game:
 
 
 
-warrior_1 = Warrior('wojownik_1.txt','Jaś', 98)
-warrior_2 = Warrior('wojownik_2.txt','Asia', 100)
+warrior_1 = Warrior('wojownik_1.txt','Jaś', 3)
+warrior_2 = Warrior('wojownik_2.txt','Asia', 2)
 warrior_3 = Warrior('wojownik_3.txt','Kuba', 1)
 warrior_4 = Warrior('wojownik_4.txt','Kuba', 10)
 
-warriors = [warrior_3]
+warriors = [warrior_2]
 core_1 = Core(10)
 
 game = Game(warriors, core_1)
