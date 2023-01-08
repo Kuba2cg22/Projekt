@@ -1,22 +1,23 @@
 # +=''dD""{}
 
-from math import sqrt
+# from math import sqrt
 
 class IncorectPath(Exception):
     pass
 
+
 class NoWarriorInGame(Exception):
     pass
 
+
 class WrongPosition(Exception):
     pass
+
 
 class Core:
     def __init__(self, size):
         self.size = size
         self.memory = [['NOP', '', [None, None], [None, None], None]] * size
-
-
 
     def size(self):
         return self.size
@@ -26,14 +27,12 @@ class Core:
         for index, register in enumerate(self.memory):
             print(index, register)
 
-
     def put_instruction_into_core(self, instruction, position):
         self.position = position
         self.memory[position] = instruction
 
     def next_position(self):
         self.position += 1
-
 
     def execute_instructions(self):
         # implementacja wykonywania instrukcji na rdzeniu
@@ -60,8 +59,6 @@ class Core:
         while source_index >= Core.size(self):
             source_index -= Core.size(self)
         self.memory[destination_index] = self.memory[source_index]
-
-
 
     def ADD(self):
         pass
@@ -115,8 +112,6 @@ class Core:
         pass
 
 
-
-
 class Instruction:
     def __init__(self, mnemonic, modifier, operands, comment):
         self.mnemonic = mnemonic
@@ -140,6 +135,14 @@ class Instruction:
         pass
 
 
+class Mnemonic:
+    pass
+
+
+class Modifier:
+    pass
+
+
 class Operand:
     def __init__(self, mode, value):
         self.mode = mode
@@ -153,7 +156,7 @@ class Warrior:
     '''
 
     '''
-    def __init__(self, path, name , position=0) -> None:
+    def __init__(self, path, name, position=0) -> None:
         self.name = name
         self.position = position
         self.path = path
@@ -172,7 +175,6 @@ class Warrior:
 
     def set_position(self, new_position):
         self.position = new_position
-
 
     def instructions(self):
         self._list_of_instructions = []
@@ -221,9 +223,6 @@ class Warrior:
         return self._list_of_instructions
 
 
-
-
-
 class Game:
     '''
     '''
@@ -243,7 +242,6 @@ class Game:
         else:
             raise NoWarriorInGame
 
-
     def play(self):
         if self._warriors:
             for warrior in self._warriors:
@@ -257,12 +255,11 @@ class Game:
                     print(instruction)
                     self._core.put_instruction_into_core(instruction, actual_position)
                     actual_position += 1
-                self._core.execute_instructions() # aż nie przerwie
+                self._core.execute_instructions()  # aż nie przerwie
                 self._core.execute_instructions()
                 print('Next warrior')
         else:
             raise NoWarriorInGame
-
 
 
 warrior_1 = Warrior('wojownik_1.txt','Jaś', 3)
@@ -284,4 +281,3 @@ core_1.visualize()
 
 # warrior_1 = Warrior('wojownik_1.txt')
 # print(warrior_1.instructions())
-
