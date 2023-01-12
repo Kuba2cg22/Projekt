@@ -11,13 +11,13 @@
 
 ## Każda instrukcja wojownika składa się z:
     -   trzyznakowego mnemonika (ADD)
-    -   
+    -
     -
     -
 
 
-    
-    
+
+
 
 ## Co ma program robić:
     -   Wybrać wojownika, który będzie brał udział w grze
@@ -29,7 +29,7 @@
 
 
 ## Etapy:
-    -   Napisanie potrzebnych klas z dokumentacją
-    -   Testy jednostkowe
+    -   Odczyt instrukcji z pliku
+    -   
     -
 
