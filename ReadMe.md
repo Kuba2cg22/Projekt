@@ -6,7 +6,7 @@
     -   Model rdzenia będący listą z losowymi istrukcjami
     -   Pliki z instrukcjami dla każdego wojownika w formacie txt
     -   Klasa wojownika umożliwiająca odczytanie i wykonanie instrukcji
-    -   Klasa gry inicjująca grę i wywołująca instrukcje każdego wojownika po kolei
+    -   Klasa gry inicjująca grę i wywołująca instrukcje każdego wojownika na zmianę
 
 
 ## Każda instrukcja wojownika składa się z:
@@ -30,6 +30,11 @@
 
 ## Etapy:
     -   Odczyt instrukcji z pliku
-    -   
     -
+    -
+
+## Pytania
+    -   jak przypisać wojownikowi ścieżkę
+    -   jak rozróżniać które instrukcje są czyje
+    -   czy rdzeń wywołuje całość od początku
 
