@@ -1,6 +1,5 @@
 # +=''dD""{}
 
-# from math import sqrt
 
 class IncorectPath(Exception):
     pass
@@ -34,10 +33,7 @@ class Core:
 
     def put_instruction_into_core(self, position, instruction):
         self.position = position
-        try:
-            self.memory[position] = instruction
-        except IndexError:
-            print('Wrong start position')
+        self.memory[position] = instruction
 
     def next_position(self):
         self.position += 1
@@ -46,25 +42,8 @@ class Core:
         # implementacja wykonywania instrukcji na rdzeniu
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
-        x = eval(mnemonic + '(instruction)')
-        x.yvg()
-        pass
-
-        # for index, register in enumerate(self.memory):  # nie tak
-        #     method = getattr(self, mnemonic)
-        #     method(register, index)
-
-    # def MOV(self, register, index):
-    #     modifier = register[1]
-    #     mode_1 ,value_1 = register[2]
-    #     mode_2 ,value_2 = register[3]
-    #     destination_index = index + int(value_2)
-    #     source_index = index + int(value_1)
-    #     while destination_index >= Core.size(self):
-    #         destination_index -= Core.size(self)
-    #     while source_index >= Core.size(self):
-    #         source_index -= Core.size(self)
-    #     self.memory[destination_index] = self.memory[source_index]
+        method = eval(mnemonic + '(instruction, position, self.memory)')
+        method.run()
 
 
 class Instruction:  # potrzebne
@@ -72,7 +51,7 @@ class Instruction:  # potrzebne
         self.instruction = instruction
 
     def mnemonic(self):
-        return self.instruction[0]
+        return self.instruction[0]  # o tuu
 
     def modifier(self):
         return self.instruction[1]
@@ -92,89 +71,98 @@ class DAT(Instruction):  # w klasach
 
 
 class MOV(Instruction):  # w klasach
-    pass
-    # modifier = instruction.
+
+    def __init__(self, instruction, position, memory):
+        super().__init__(instruction)
+        self.position = position
+        self.memory = memory
+
+    def run(self):
+        operands = self.instruction.operands()
+        destination_index = self.position + int(operands[1][1])
+        source_index = self.position + int(operands[0][1])
+        core_size = len(self.memory)
+        while destination_index >= core_size:  # tuu
+            destination_index -= core_size
+        while source_index >= core_size:
+            source_index -= core_size
+        self.memory[destination_index] = self.memory[source_index]
+
     # mode_1 ,value_1 = register[2]
     # mode_2 ,value_2 = register[3]
-    # destination_index = index + int(value_2)
-    # source_index = index + int(value_1)
-    # while destination_index >= Core.size(self):
-    #     destination_index -= Core.size(self)
-    # while source_index >= Core.size(self):
-    #     source_index -= Core.size(self)
-    # self.memory[destination_index] = self.memory[source_index]
 
 
-class ADD(Instruction):  # w klasach
-    def __init__(self, instruction):
-        super().__init__(instruction)
+def i():
+    class ADD(Instruction):  # w klasach
+        def __init__(self, instruction):
+            super().__init__(instruction)
 
-    def yvg(self):
+        def run(self):
+            pass
+
+
+    class SUB(Instruction):
         pass
 
 
-class SUB(Instruction):
-    pass
+    class MUL(Instruction):
+        pass
 
 
-class MUL(Instruction):
-    pass
+    class DIV(Instruction):
+        pass
 
 
-class DIV(Instruction):
-    pass
+    class MOD(Instruction):
+        pass
 
 
-class MOD(Instruction):
-    pass
+    class JMP(Instruction):
+        pass
 
 
-class JMP(Instruction):
-    pass
+    class JMZ(Instruction):
+        pass
 
 
-class JMZ(Instruction):
-    pass
+    class JMN(Instruction):
+        pass
 
 
-class JMN(Instruction):
-    pass
+    class DJN(Instruction):
+        pass
 
 
-class DJN(Instruction):
-    pass
+    class SPL(Instruction):
+        pass
 
 
-class SPL(Instruction):
-    pass
+    class CMP(Instruction):
+        pass
 
 
-class CMP(Instruction):
-    pass
+    class SEQ(Instruction):
+        pass
 
 
-class SEQ(Instruction):
-    pass
+    class SNE(Instruction):
+        pass
 
 
-class SNE(Instruction):
-    pass
+    class SLT(Instruction):
+        pass
 
 
-class SLT(Instruction):
-    pass
+    class LDP(Instruction):
+        pass
 
 
-class LDP(Instruction):
-    pass
+    class STP(Instruction):
+        pass
 
 
-class STP(Instruction):
-    pass
-
-
-class NOP(Instruction):
-    pass
+    class NOP(Instruction):
+        pass
 
 
 class Read_from_file:
@@ -311,8 +299,8 @@ class Game:
                     position = warrior.next_position()
                     if position == self._core.size:
                         position = warrior.set_position(0)
-                    if round >= 100:
-                        answer = input('Its round 100. Proceed?(y/n)')
+                    if round > 1000:
+                        answer = input('Its round over 1000. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
@@ -322,23 +310,3 @@ class Game:
                 raise NoWarriorInGame
             round += 1
         print(f'Game result: {self.result}')
-
-
-instructions_1 = Read_from_file('wojownik_1.txt').get_instructions()
-warrior_1 = Warrior('Jakub', instructions_1, 8)
-ready_warrior_1 = [warrior_1, instructions_1]
-
-instructions_3 = Read_from_file('wojownik_3.txt').get_instructions()
-warrior_3 = Warrior('Kuba', instructions_3, 3)
-
-warriors = [warrior_1, warrior_3]
-
-core_1 = Core(10)
-
-game_1 = Game(core_1, warriors)
-
-game_1.prepare_game()
-
-# core_1.visualize()n
-
-game_1.play()

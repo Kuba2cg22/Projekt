@@ -14,15 +14,28 @@ def test_create_file_with_wrong_path():
 
 
 def test_warrior():
-    warrior_1 = Warrior('Kuba', 10)
+    instructions = []
+    warrior_1 = Warrior('Kuba', instructions, 10)
     assert warrior_1.name == 'Kuba'
+    assert warrior_1.instructions == []
     assert warrior_1.position == 10
 
 
 def test_warrior_no_position():
-    warrior_1 = Warrior('Kuba')
+    instructions = []
+    warrior_1 = Warrior('Kuba', instructions)
     assert warrior_1.name == 'Kuba'
+    assert warrior_1.instructions == []
     assert warrior_1.position == 0
+
+
+def test_instuction():
+    mnemonic = 'MOV'
+    modifier = None
+    operands = [[None, '3'], ['#', 2]]
+    comment = None
+    instruction = Instruction([mnemonic, modifier, operands, comment])
+    assert instruction.mnemonic == 'MOV'
 
 
 def test_list_of_instuctions():
