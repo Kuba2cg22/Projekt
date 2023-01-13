@@ -13,6 +13,7 @@ class WrongPosition(Exception):
     pass
 
 
+
 class Core:
     def __init__(self, size):
         self.size = size
@@ -42,8 +43,7 @@ class Core:
         # implementacja wykonywania instrukcji na rdzeniu
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
-        method = eval(mnemonic + '(instruction, position, self.memory)')
-        # chyba nie tak
+        method = mnemonics[mnemonic](instruction, position, self.memory)
         method.run()
 
 
@@ -192,6 +192,29 @@ def i():
 
     class NOP(Instruction):
         pass
+
+
+mnemonics = {
+    'DAT': DAT,
+    'MOV': MOV,
+    'ADD': ADD,
+    'JMP': JMP,
+    # 'SUB': SUB,
+    # 'MUL': MUL,
+    # 'DIV': DIV,
+    # 'MOD': MOD,
+    # 'JMZ': JMZ,
+    # 'JMN': JMN,
+    # 'DJN': DJN,
+    # 'SPL': SPL,
+    # 'CMP': CMP,
+    # 'SEQ': SEQ,
+    # 'SNE': SNE,
+    # 'SLT': SLT,
+    # 'LDP': LDP,
+    # 'STP': STP,
+    # 'NOP': NOP
+}
 
 
 class Read_from_file:
