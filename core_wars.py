@@ -43,6 +43,7 @@ class Core:
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
         method = eval(mnemonic + '(instruction, position, self.memory)')
+        # chyba nie tak
         method.run()
 
 
@@ -59,6 +60,18 @@ class Instruction:  # potrzebne
     def operands(self):
         return self.instruction[2]
 
+    def mode_1(self):
+        return self.instruction[2][0][0]
+
+    def value_1(self):
+        return self.instruction[2][0][1]
+
+    def mode_2(self):
+        return self.instruction[2][1][0]
+
+    def value_2(self):
+        return self.instruction[2][1][1]
+
     def comment(self):
         return self.instruction[3]
 
@@ -67,7 +80,14 @@ class Instruction:  # potrzebne
 
 
 class DAT(Instruction):  # w klasach
-    pass
+
+    def __init__(self, instruction, position, memory):
+        super().__init__(instruction)
+        self.position = position
+        self.memory = memory
+
+    def run(self):
+        pass
 
 
 class MOV(Instruction):  # w klasach
@@ -78,9 +98,9 @@ class MOV(Instruction):  # w klasach
         self.memory = memory
 
     def run(self):
-        operands = self.instruction.operands()
-        destination_index = self.position + int(operands[1][1])
-        source_index = self.position + int(operands[0][1])
+        # operands = self.instruction.operands()
+        destination_index = self.position + int(self.instruction.value_2())
+        source_index = self.position + int(self.instruction.value_1())
         core_size = len(self.memory)
         while destination_index >= core_size:  # tuu
             destination_index -= core_size
@@ -88,17 +108,28 @@ class MOV(Instruction):  # w klasach
             source_index -= core_size
         self.memory[destination_index] = self.memory[source_index]
 
-    # mode_1 ,value_1 = register[2]
-    # mode_2 ,value_2 = register[3]
+
+class ADD(Instruction):  # w klasach
+    def __init__(self, instruction, position, memory):
+        super().__init__(instruction)
+        self.position = position
+        self.memory = memory
+
+    def run(self):
+        pass
+
+
+class JMP(Instruction):
+    def __init__(self, instruction, position, memory):
+        super().__init__(instruction)
+        self.position = position
+        self.memory = memory
+
+    def run(self):
+        pass
 
 
 def i():
-    class ADD(Instruction):  # w klasach
-        def __init__(self, instruction):
-            super().__init__(instruction)
-
-        def run(self):
-            pass
 
 
     class SUB(Instruction):
@@ -117,8 +148,6 @@ def i():
         pass
 
 
-    class JMP(Instruction):
-        pass
 
 
     class JMZ(Instruction):
@@ -272,18 +301,20 @@ class Game:
         # umieszcza je na rdzeniu
 
         for warrior in self._warriors:
-            start_positon = warrior.position
+
+            while warrior.position not in range(self._core.size):
+                new_position = warrior.position - self._core.size
+                start_position = warrior.set_position(new_position)
+
+            start_position = warrior.position
             position = warrior.position
 
             for instruction in warrior.instructions:
-                while position not in range(self._core.size):
-                    new_position = warrior.position - self._core.size
-                    position = warrior.set_position(new_position)
                 self._core.put_instruction_into_core(position, instruction)
                 position = warrior.next_position()
                 if position == self._core.size:
                     position = warrior.set_position(0)
-            warrior.set_position(start_positon)
+            warrior.set_position(start_position)
 
     def play(self):  # nie wszystko na raz
         # wywołuje grę
@@ -299,8 +330,8 @@ class Game:
                     position = warrior.next_position()
                     if position == self._core.size:
                         position = warrior.set_position(0)
-                    if round > 1000:
-                        answer = input('Its round over 1000. Proceed?(y/n)')
+                    if round > 100:
+                        answer = input('Round is over 100. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
