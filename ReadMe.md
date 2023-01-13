@@ -37,4 +37,5 @@
     -   jak przypisać wojownikowi ścieżkę
     -   czy rdzeń wywołuje całość od początku
     -   czy do rdzenie mam włożyć instrucje czy obiekty instrukcji
+    -   jak je wywołać
 

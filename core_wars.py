@@ -17,9 +17,12 @@ class WrongPosition(Exception):
 class Core:
     def __init__(self, size):
         self.size = size
-        self.memory = [
-            ['DAT', None, [[None, None], [None, None]], None]
-            ] * size
+        mnemonic = 'DAT'
+        modifier = None
+        operands = [[None, None], [None, None]]
+        comment = None
+        instruction = Instruction([mnemonic, modifier, operands, comment])
+        self.memory = [instruction] * size
 
     def get_size(self):
         return self.size
@@ -27,7 +30,7 @@ class Core:
     def visualize(self):  # nie tu na zewnątrz
         # implementacja wizualizacji stanu rdzenia
         for index, register in enumerate(self.memory):
-            print(index, register)
+            print(index, register.instruction)
 
     def put_instruction_into_core(self, position, instruction):
         self.position = position
@@ -43,81 +46,25 @@ class Core:
         # implementacja wykonywania instrukcji na rdzeniu
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
-        method = getattr(mnemonic, 'run')
-        method(instruction, position)
-
+        x = eval(mnemonic + '(instruction)')
+        x.yvg()
+        pass
 
         # for index, register in enumerate(self.memory):  # nie tak
         #     method = getattr(self, mnemonic)
         #     method(register, index)
 
-
-
-    def DAT(self):  # w klasach
-        pass
-
-    def MOV(self, register, index):
-        modifier = register[1]
-        mode_1 ,value_1 = register[2]
-        mode_2 ,value_2 = register[3]
-        destination_index = index + int(value_2)
-        source_index = index + int(value_1)
-        while destination_index >= Core.size(self):
-            destination_index -= Core.size(self)
-        while source_index >= Core.size(self):
-            source_index -= Core.size(self)
-        self.memory[destination_index] = self.memory[source_index]
-
-    def ADD(self):
-        pass
-
-    def SUB(self):
-        pass
-
-    def MUL(self):
-        pass
-
-    def DIV(self):
-        pass
-
-    def MOD(self):
-        pass
-
-    def JMP(self):
-        pass
-
-    def JMZ(self):
-        pass
-
-    def JMN(self):
-        pass
-
-    def DJN(self):
-        pass
-
-    def SPL(self):
-        pass
-
-    def CMP(self):
-        pass
-
-    def SEQ(self):
-        pass
-
-    def SNE(self):
-        pass
-
-    def SLT(self):
-        pass
-
-    def LDP(self):
-        pass
-
-    def STP(self):
-        pass
-
-    def NOP(self, register, index):
-        pass
+    # def MOV(self, register, index):
+    #     modifier = register[1]
+    #     mode_1 ,value_1 = register[2]
+    #     mode_2 ,value_2 = register[3]
+    #     destination_index = index + int(value_2)
+    #     source_index = index + int(value_1)
+    #     while destination_index >= Core.size(self):
+    #         destination_index -= Core.size(self)
+    #     while source_index >= Core.size(self):
+    #         source_index -= Core.size(self)
+    #     self.memory[destination_index] = self.memory[source_index]
 
 
 class Instruction:  # potrzebne
@@ -136,30 +83,98 @@ class Instruction:  # potrzebne
     def comment(self):
         return self.instruction[3]
 
-    def run_instruction(self):
-        pass
+    def get_instruction(self):
+        return self.instruction
 
 
 class DAT(Instruction):  # w klasach
-    def __init__(self, instruction):
-        super().__init__(instruction)
+    pass
 
 
 class MOV(Instruction):  # w klasach
+    pass
+    # modifier = instruction.
+    # mode_1 ,value_1 = register[2]
+    # mode_2 ,value_2 = register[3]
+    # destination_index = index + int(value_2)
+    # source_index = index + int(value_1)
+    # while destination_index >= Core.size(self):
+    #     destination_index -= Core.size(self)
+    # while source_index >= Core.size(self):
+    #     source_index -= Core.size(self)
+    # self.memory[destination_index] = self.memory[source_index]
+
+
+class ADD(Instruction):  # w klasach
     def __init__(self, instruction):
         super().__init__(instruction)
 
+    def yvg(self):
+        pass
 
-        # modifier = instruction.
-        # mode_1 ,value_1 = register[2]
-        # mode_2 ,value_2 = register[3]
-        # destination_index = index + int(value_2)
-        # source_index = index + int(value_1)
-        # while destination_index >= Core.size(self):
-        #     destination_index -= Core.size(self)
-        # while source_index >= Core.size(self):
-        #     source_index -= Core.size(self)
-        # self.memory[destination_index] = self.memory[source_index]
+
+class SUB(Instruction):
+    pass
+
+
+class MUL(Instruction):
+    pass
+
+
+class DIV(Instruction):
+    pass
+
+
+class MOD(Instruction):
+    pass
+
+
+class JMP(Instruction):
+    pass
+
+
+class JMZ(Instruction):
+    pass
+
+
+class JMN(Instruction):
+    pass
+
+
+class DJN(Instruction):
+    pass
+
+
+class SPL(Instruction):
+    pass
+
+
+class CMP(Instruction):
+    pass
+
+
+class SEQ(Instruction):
+    pass
+
+
+class SNE(Instruction):
+    pass
+
+
+class SLT(Instruction):
+    pass
+
+
+class LDP(Instruction):
+    pass
+
+
+class STP(Instruction):
+    pass
+
+
+class NOP(Instruction):
+    pass
 
 
 class Read_from_file:
@@ -226,9 +241,7 @@ class Read_from_file:
             operands = self.get_operands()
             comment = self.get_comment()
             instruction = Instruction([mnemonic, modifier, operands, comment])
-            self._list_of_instructions.append(
-                instruction
-                )
+            self._list_of_instructions.append(instruction)
 
         return self._list_of_instructions
 
@@ -237,9 +250,10 @@ class Warrior:  # bez ścieżki
     '''
 
     '''
-    def __init__(self, name, position=0) -> None:
+    def __init__(self, name, instructions, position=0) -> None:
         self.name = name
         self.position = position
+        self.instructions = instructions
 
     def get_name(self):
         return self.name
@@ -259,8 +273,8 @@ class Warrior:  # bez ścieżki
 class Game:
     '''
     '''
-    def __init__(self, core, ready_warriors) -> None:
-        self._ready_warriors = ready_warriors if ready_warriors else []
+    def __init__(self, core, warriors) -> None:
+        self._warriors = warriors if warriors else []
         self._core = core if core else []
         self.result = 'undecided'
 
@@ -269,18 +283,14 @@ class Game:
         # czyta instrukcje z pliku
         # umieszcza je na rdzeniu
 
-        for ready_warrior in self._ready_warriors:
-
-            warrior = ready_warrior[0]
-            instructions = ready_warrior[1]
+        for warrior in self._warriors:
             start_positon = warrior.position
             position = warrior.position
 
-            for instruction in instructions:
+            for instruction in warrior.instructions:
                 while position not in range(self._core.size):
                     new_position = warrior.position - self._core.size
                     position = warrior.set_position(new_position)
-                print(instruction)
                 self._core.put_instruction_into_core(position, instruction)
                 position = warrior.next_position()
                 if position == self._core.size:
@@ -293,44 +303,42 @@ class Game:
         print('Starting Core Wars')
         while self.result == 'undecided':
             print(f'Round: {round}')
-            if self._ready_warriors:
-                for ready_warrior in self._ready_warriors:
-                    warrior = ready_warrior[0]
-                    start_position = warrior.position
-                    actual_position = start_position
-                    # aż nie przerwie
-                    self._core.execute_instruction(actual_position)
-                    print('Next warrior')
+            if self._warriors:
+                for warrior in self._warriors:
+                    print(f'Warrior: {warrior.get_name()}')
+                    position = warrior.position
+                    self._core.execute_instruction(position)
+                    position = warrior.next_position()
+                    if position == self._core.size:
+                        position = warrior.set_position(0)
                     if round >= 100:
                         answer = input('Its round 100. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
                             self.result = 'Its draw'
+                            break  # ?
             else:
                 raise NoWarriorInGame
+            round += 1
         print(f'Game result: {self.result}')
 
 
-warrior_1 = Warrior('Jakub', 0)
-warrior_1_instructions = Read_from_file('wojownik_1.txt')
-instructions_1 = warrior_1_instructions.get_instructions()
+instructions_1 = Read_from_file('wojownik_1.txt').get_instructions()
+warrior_1 = Warrior('Jakub', instructions_1, 8)
 ready_warrior_1 = [warrior_1, instructions_1]
 
-warrior_3 = Warrior('Kuba', 5)
-warrior_3_instructions = Read_from_file('wojownik_3.txt')
-instructions_3 = warrior_3_instructions.get_instructions()
-ready_warrior_3 = [warrior_3, instructions_3]
+instructions_3 = Read_from_file('wojownik_3.txt').get_instructions()
+warrior_3 = Warrior('Kuba', instructions_3, 3)
 
-ready_warriors = [ready_warrior_3]
+warriors = [warrior_1, warrior_3]
 
 core_1 = Core(10)
-core_1.visualize()
 
-game_1 = Game(core_1, ready_warriors)
+game_1 = Game(core_1, warriors)
 
 game_1.prepare_game()
 
-core_1.visualize()
+# core_1.visualize()n
 
 game_1.play()
