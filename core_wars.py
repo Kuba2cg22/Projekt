@@ -13,6 +13,9 @@ class WrongPosition(Exception):
     pass
 
 
+class WarriorLosses(Exception):
+    pass
+
 
 class Core:
     def __init__(self, size):
@@ -52,7 +55,7 @@ class Instruction:  # potrzebne
         self.instruction = instruction
 
     def mnemonic(self):
-        return self.instruction[0]  # o tuu
+        return self.instruction[0]
 
     def modifier(self):
         return self.instruction[1]
@@ -87,7 +90,7 @@ class DAT(Instruction):  # w klasach
         self.memory = memory
 
     def run(self):
-        pass
+        raise WarriorLosses
 
 
 class MOV(Instruction):  # w klasach
@@ -349,7 +352,11 @@ class Game:
                 for warrior in self._warriors:
                     print(f'Warrior: {warrior.get_name()}')
                     position = warrior.position
-                    self._core.execute_instruction(position)
+                    try:
+                        self._core.execute_instruction(position)
+                    except WarriorLosses:
+                        self.result = f'Warrior {warrior.get_name()} lost'
+                        break  # ?
                     position = warrior.next_position()
                     if position == self._core.size:
                         position = warrior.set_position(0)

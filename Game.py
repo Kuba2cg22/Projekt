@@ -1,15 +1,9 @@
 from core_wars import (
     Core,
-    # Instruction,
     Read_from_file,
     Warrior,
     Game
 )
-
-# from core_wars import (
-#     DAT, MOV, ADD, SUB, MUL, DIV, MOD, JMP, JMZ, JMN,
-#     DJN, SPL, CMP, SEQ, SNE, SLT, LDP, STP, NOP
-# )
 
 
 def main():
@@ -23,7 +17,10 @@ def main():
     instructions_3 = Read_from_file('wojownik_3.txt').get_instructions()
     warrior_3 = Warrior('Kuba', instructions_3, 3)
 
-    warriors = [warrior_1]
+    instructions_4 = Read_from_file('wojownik_4.txt').get_instructions()
+    warrior_4 = Warrior('Asia', instructions_4, 2)
+
+    warriors = [warrior_4]
 
     core_1 = Core(10)
 
@@ -31,11 +28,11 @@ def main():
 
     game_1.prepare_game()
 
-    # core_1.visualize()
-
-    # game_1.play()
-
     core_1.visualize()
+
+    game_1.play()
+
+    # core_1.visualize()
 
 
 if __name__ == "__main__":
