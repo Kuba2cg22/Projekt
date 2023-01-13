@@ -35,6 +35,6 @@
 
 ## Pytania
     -   jak przypisać wojownikowi ścieżkę
-    -   jak rozróżniać które instrukcje są czyje
     -   czy rdzeń wywołuje całość od początku
+    -   czy do rdzenie mam włożyć instrucje czy obiekty instrukcji
 

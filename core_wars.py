@@ -17,7 +17,9 @@ class WrongPosition(Exception):
 class Core:
     def __init__(self, size):
         self.size = size
-        self.memory = [['DAT', '', [None, None], [None, None], None]] * size
+        self.memory = [
+            ['DAT', None, [[None, None], [None, None]], None]
+            ] * size
 
     def get_size(self):
         return self.size
@@ -32,18 +34,22 @@ class Core:
         try:
             self.memory[position] = instruction
         except IndexError:
-            print('Wrong position')
+            print('Wrong start position')
 
     def next_position(self):
         self.position += 1
 
-    def execute_instructions(self):
+    def execute_instruction(self, position):
         # implementacja wykonywania instrukcji na rdzeniu
+        instruction = self.memory[position]
+        mnemonic = instruction.mnemonic()
+        method = getattr(mnemonic, 'run')
+        method(instruction, position)
 
-        for index, register in enumerate(self.memory):  # nie tak
 
-            method = getattr(self, mnemonic)
-            method(register, index)
+        # for index, register in enumerate(self.memory):  # nie tak
+        #     method = getattr(self, mnemonic)
+        #     method(register, index)
 
 
 
@@ -138,6 +144,7 @@ class DAT(Instruction):  # w klasach
     def __init__(self, instruction):
         super().__init__(instruction)
 
+
 class MOV(Instruction):  # w klasach
     def __init__(self, instruction):
         super().__init__(instruction)
@@ -218,8 +225,9 @@ class Read_from_file:
             modifier = self.get_modifier()
             operands = self.get_operands()
             comment = self.get_comment()
+            instruction = Instruction([mnemonic, modifier, operands, comment])
             self._list_of_instructions.append(
-                [mnemonic, modifier, operands, comment]
+                instruction
                 )
 
         return self._list_of_instructions
@@ -239,6 +247,14 @@ class Warrior:  # bez ścieżki
     def get_position(self):
         return self.position
 
+    def set_position(self, new_position):
+        self.position = new_position
+        return self.position
+
+    def next_position(self):
+        self.position += 1
+        return self.position
+
 
 class Game:
     '''
@@ -254,60 +270,59 @@ class Game:
         # umieszcza je na rdzeniu
 
         for ready_warrior in self._ready_warriors:
+
             warrior = ready_warrior[0]
             instructions = ready_warrior[1]
-            start_position = warrior.position
-            actual_position = start_position
-            for instruction in instructions:
-                if start_position not in range(self._core.size+1):
-                    raise WrongPosition
-                print(instruction)
-                self._core.put_instruction_into_core(actual_position, instruction)
-                actual_position += 1
-                if actual_position == self._core.size:
-                    actual_position -= self._core.size
+            start_positon = warrior.position
+            position = warrior.position
 
+            for instruction in instructions:
+                while position not in range(self._core.size):
+                    new_position = warrior.position - self._core.size
+                    position = warrior.set_position(new_position)
+                print(instruction)
+                self._core.put_instruction_into_core(position, instruction)
+                position = warrior.next_position()
+                if position == self._core.size:
+                    position = warrior.set_position(0)
+            warrior.set_position(start_positon)
 
     def play(self):  # nie wszystko na raz
         # wywołuje grę
+        round = 1
+        print('Starting Core Wars')
         while self.result == 'undecided':
-            self._core.execute_instructions()
-        print(self.result)
-        if self._warriors:
-            for warrior in self._warriors:
-                  # aż nie przerwie
-                self._core.execute_instructions()
-                print('Next warrior')
-        else:
-            raise NoWarriorInGame
+            print(f'Round: {round}')
+            if self._ready_warriors:
+                for ready_warrior in self._ready_warriors:
+                    warrior = ready_warrior[0]
+                    start_position = warrior.position
+                    actual_position = start_position
+                    # aż nie przerwie
+                    self._core.execute_instruction(actual_position)
+                    print('Next warrior')
+                    if round >= 100:
+                        answer = input('Its round 100. Proceed?(y/n)')
+                        if answer == 'y':
+                            continue
+                        else:
+                            self.result = 'Its draw'
+            else:
+                raise NoWarriorInGame
+        print(f'Game result: {self.result}')
 
 
-# warrior_1 = Warrior('wojownik_1.txt','Jaś', 3)
-# warrior_2 = Warrior('wojownik_2.txt','Asia', 2)
-# warrior_3 = Warrior('wojownik_3.txt','Kuba', 1)
-# warrior_4 = Warrior('wojownik_4.txt','Kuba', 10)
+warrior_1 = Warrior('Jakub', 0)
+warrior_1_instructions = Read_from_file('wojownik_1.txt')
+instructions_1 = warrior_1_instructions.get_instructions()
+ready_warrior_1 = [warrior_1, instructions_1]
 
-# warriors = [warrior_2]
-# core_1 = Core(4)
+warrior_3 = Warrior('Kuba', 5)
+warrior_3_instructions = Read_from_file('wojownik_3.txt')
+instructions_3 = warrior_3_instructions.get_instructions()
+ready_warrior_3 = [warrior_3, instructions_3]
 
-# game = Game(warriors, core_1)
-# # game.add_warrior(warrior_2)
-# # game.remove_warrior(warrior_1)
-# core_1.visualize()
-
-# game.play()
-# core_1.visualize()
-# # print(warrior_1._list_of_instructions)
-# print(warrior_1.instructions())
-
-warrior_1 = Warrior('Jakub', 9)
-warrior_1_instructions = Read_from_file('wojownik_3.txt')
-
-inst = warrior_1_instructions.get_instructions()
-
-ready_warrior_1 = [warrior_1, inst]
-
-ready_warriors = [ready_warrior_1]
+ready_warriors = [ready_warrior_3]
 
 core_1 = Core(10)
 core_1.visualize()
@@ -318,5 +333,4 @@ game_1.prepare_game()
 
 core_1.visualize()
 
-# for i in inst:
-#     print(i)
+game_1.play()
