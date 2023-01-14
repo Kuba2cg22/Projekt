@@ -36,9 +36,9 @@ def test_instuction():
     comment = None
     instruction = Instruction([mnemonic, modifier, operands, comment])
     assert instruction.mnemonic() == 'MOV'
-    assert instruction.modifier() == None
+    assert instruction.modifier() is None
     assert instruction.operands() == [[None, 3], ['#', 2]]
-    assert instruction.comment() == None
+    assert instruction.comment() is None
 
 
 def test_MOV():

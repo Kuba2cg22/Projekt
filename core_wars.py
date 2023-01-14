@@ -119,35 +119,44 @@ class MOV(Instruction):  # w klasach
         self.core = core
 
     def run(self):
+        source_index = self.position + self.instruction.value_1()
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        instruction_to_copy = self.core.memory[source_index]
+        copy_of_instuction = copy.deepcopy(instruction_to_copy)
+
         if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
             destination_index = self.position + self.instruction.value_2()
-            source_index = self.position + self.instruction.value_1()
-            while destination_index >= self.core.get_size():  # tuu
+            # source_index = self.position + self.instruction.value_1()
+
+            while destination_index >= self.core.get_size():
                 destination_index -= self.core.get_size()
-            while source_index >= self.core.get_size():
-                source_index -= self.core.get_size()
 
-            self.core.memory[destination_index] = self.core.memory[source_index]
+            self.core.memory[destination_index] = copy_of_instuction
 
-        if self.instruction.mode_2() == '@':
-            source_index = self.position + self.instruction.value_1()
-            second_instruction = self.core.memory[source_index]
+        elif self.instruction.mode_2() == '@':
 
-            copy_of_instuction = copy.deepcopy((self.core.memory[source_index]))
-
-            destination_index = self.position + second_instruction.value_2()\
+            destination_index = self.position + instruction_to_copy.value_2()\
                 + self.instruction.value_2()
 
             while destination_index >= self.core.get_size():
                 destination_index -= self.core.get_size()
-            while source_index >= self.core.get_size():
-                source_index -= self.core.get_size()
 
             self.core.memory[destination_index] = copy_of_instuction
             # nowy obiekt
 
-        if self.instruction.mode_2() == '<':
-            pass
+        elif self.instruction.mode_2() == '<':
+
+            needed_instruction = self.core.memory[
+                self.position + instruction_to_copy.value_2()
+                ]
+
+            destination_index = self.position + instruction_to_copy.value_2()\
+                + needed_instruction.value_2()
+
+            self.core.memory[destination_index] = copy_of_instuction
 
         self.core.next_position()
 
@@ -164,11 +173,11 @@ class ADD(Instruction):  # w klasach
         while destination_index >= self.core.get_size():
             destination_index -= self.core.get_size()
 
-        second_instruction = self.core.memory[destination_index]
+        instruction_to_copy = self.core.memory[destination_index]
 
         if self.instruction.mode_1() == '#':  # czego ustawia wszystko
-            new_value = self.instruction.value_1() + second_instruction.value_2()
-            second_instruction.set_value_2(new_value)
+            new_value = self.instruction.value_1() + instruction_to_copy.value_2()
+            instruction_to_copy.set_value_2(new_value)
 
         self.core.next_position()
 
@@ -262,7 +271,7 @@ mnemonics = {
     'MOV': MOV,
     'ADD': ADD,
     'JMP': JMP,
-    # 'SUB': SUB,
+    'SUB': SUB,
     # 'MUL': MUL,
     # 'DIV': DIV,
     # 'MOD': MOD,

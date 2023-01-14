@@ -20,7 +20,7 @@ def main():
     instructions_4 = Read_from_file('wojownik_4.txt').get_instructions()
     warrior_4 = Warrior('Asia', instructions_4, 2)
 
-    warriors = [warrior_1, warrior_2]
+    warriors = [warrior_4]
 
     core_1 = Core(16)
 
