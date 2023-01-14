@@ -1,9 +1,10 @@
 from core_wars import (
     Core,
-    Read_from_file,
     Warrior,
     Game
 )
+
+from reader import Read_from_file
 
 
 def main():
