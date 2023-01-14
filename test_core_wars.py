@@ -75,9 +75,9 @@ def test_memory_empty_core():
     core_1 = Core(3)
     assert core_1.size == 3
     assert core_1.visualize() == [
-        (0, ['DAT', None, [[None, None], [None, None]], None]),
-        (1, ['DAT', None, [[None, None], [None, None]], None]),
-        (2, ['DAT', None, [[None, None], [None, None]], None])
+        (0, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (1, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (2, ['DAT', None, [[None, 0], [None, 0]], None])
         ]
 
 
@@ -85,9 +85,9 @@ def test_put_instruction_into_core():
     core_1 = Core(3)
     assert core_1.size == 3
     assert core_1.visualize() == [
-        (0, ['DAT', None, [[None, None], [None, None]], None]),
-        (1, ['DAT', None, [[None, None], [None, None]], None]),
-        (2, ['DAT', None, [[None, None], [None, None]], None])
+        (0, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (1, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (2, ['DAT', None, [[None, 0], [None, 0]], None])
         ]
     mnemonic = 'MOV'
     modifier = None
@@ -96,9 +96,9 @@ def test_put_instruction_into_core():
     instruction = Instruction([mnemonic, modifier, operands, comment])
     core_1.put_instruction_into_core(1, instruction)
     assert core_1.visualize() == [
-        (0, ['DAT', None, [[None, None], [None, None]], None]),
+        (0, ['DAT', None, [[None, 0], [None, 0]], None]),
         (1, ['MOV', None, [[None, 0], ['#', 1]], None]),
-        (2, ['DAT', None, [[None, None], [None, None]], None])
+        (2, ['DAT', None, [[None, 0], [None, 0]], None])
         ]
 
 
@@ -106,9 +106,9 @@ def test_execute_MOV_instruction_core():
     core_1 = Core(3)
     assert core_1.size == 3
     assert core_1.visualize() == [
-        (0, ['DAT', None, [[None, None], [None, None]], None]),
-        (1, ['DAT', None, [[None, None], [None, None]], None]),
-        (2, ['DAT', None, [[None, None], [None, None]], None])
+        (0, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (1, ['DAT', None, [[None, 0], [None, 0]], None]),
+        (2, ['DAT', None, [[None, 0], [None, 0]], None])
         ]
     mnemonic = 'MOV'
     modifier = None

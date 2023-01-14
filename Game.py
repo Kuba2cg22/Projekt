@@ -22,7 +22,7 @@ def main():
 
     warriors = [warrior_1, warrior_2]
 
-    core_1 = Core(15)
+    core_1 = Core(16)
 
     game_1 = Game(core_1, warriors)
 

@@ -1,5 +1,7 @@
 # +=''dD""{}
 
+import copy
+
 
 class IncorectPath(Exception):
     pass
@@ -22,7 +24,7 @@ class Core:
         self.size = size
         mnemonic = 'DAT'
         modifier = None
-        operands = [[None, None], [None, None]]
+        operands = [[None, 0], [None, 0]]
         comment = None
         instruction = Instruction([mnemonic, modifier, operands, comment])
         self.memory = [instruction] * size
@@ -110,7 +112,7 @@ class DAT(Instruction):  # w klasach
 
 
 class MOV(Instruction):  # w klasach
-
+    # kopiuje cały obiekt
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -131,14 +133,21 @@ class MOV(Instruction):  # w klasach
             source_index = self.position + self.instruction.value_1()
             second_instruction = self.core.memory[source_index]
 
-            destination_index = self.position + second_instruction.value_2() + self.instruction.value_2()
+            copy_of_instuction = copy.deepcopy((self.core.memory[source_index]))
 
-            while destination_index >= self.core.get_size():  # tuu
+            destination_index = self.position + second_instruction.value_2()\
+                + self.instruction.value_2()
+
+            while destination_index >= self.core.get_size():
                 destination_index -= self.core.get_size()
             while source_index >= self.core.get_size():
                 source_index -= self.core.get_size()
 
-            self.core.memory[destination_index] = self.core.memory[source_index]
+            self.core.memory[destination_index] = copy_of_instuction
+            # nowy obiekt
+
+        if self.instruction.mode_2() == '<':
+            pass
 
         self.core.next_position()
 
@@ -158,10 +167,8 @@ class ADD(Instruction):  # w klasach
         second_instruction = self.core.memory[destination_index]
 
         if self.instruction.mode_1() == '#':  # czego ustawia wszystko
-            second_instruction.instruction[2][1][1] = self.instruction.value_1() + second_instruction.value_2()
-            # second_instruction.set_value_2(
-            #     self.instruction.value_1() + second_instruction.value_2()
-            #     )
+            new_value = self.instruction.value_1() + second_instruction.value_2()
+            second_instruction.set_value_2(new_value)
 
         self.core.next_position()
 
@@ -177,11 +184,19 @@ class JMP(Instruction):
         self.core.set_position(new_position)
 
 
+class SUB(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+        self.core.next_position()
+
+
 def i():
 
 
-    class SUB(Instruction):
-        pass
 
 
     class MUL(Instruction):
