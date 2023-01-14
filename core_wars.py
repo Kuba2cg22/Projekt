@@ -43,15 +43,20 @@ class Core:
 
     def set_position(self, new_position):
         self.position = new_position
+        if self.position == self.size:
+            self.position -= self.size
 
     def next_position(self):
         self.position += 1
+        if self.position == self.size:
+            self.position -= self.size
 
     def get_position(self):
         return self.position
 
     def execute_instruction(self, position):
         # implementacja wykonywania instrukcji na rdzeniu
+        self.set_position(position)
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
         method = mnemonics[mnemonic](instruction, position, self)  # czy można samo self
@@ -153,9 +158,10 @@ class ADD(Instruction):  # w klasach
         second_instruction = self.core.memory[destination_index]
 
         if self.instruction.mode_1() == '#':  # czego ustawia wszystko
-            second_instruction.set_value_2(
-                self.instruction.value_1() + second_instruction.value_2()
-                )
+            second_instruction.instruction[2][1][1] = self.instruction.value_1() + second_instruction.value_2()
+            # second_instruction.set_value_2(
+            #     self.instruction.value_1() + second_instruction.value_2()
+            #     )
 
         self.core.next_position()
 
@@ -332,9 +338,10 @@ class Warrior:  # bez ścieżki
     '''
 
     '''
-    def __init__(self, name, instructions, position=0) -> None:
+    def __init__(self, name, instructions, start_position=0) -> None:
         self.name = name
-        self.position = position
+        self.start_position = start_position
+        self.position = start_position
         self.instructions = instructions
 
     def get_name(self):
@@ -345,7 +352,7 @@ class Warrior:  # bez ścieżki
 
     def set_position(self, new_position):
         self.position = new_position
-        return self.position
+        # return self.position
 
     def next_position(self):
         self.position += 1
@@ -369,18 +376,19 @@ class Game:
 
             while warrior.position not in range(self._core.size):
                 new_position = warrior.position - self._core.size
-                start_position = warrior.set_position(new_position)
+                warrior.start_position = warrior.set_position(new_position)
 
-            start_position = warrior.position
+            # start_position = warrior.position
             position = warrior.position
 
             for instruction in warrior.instructions:
                 self._core.put_instruction_into_core(position, instruction)
-                position = warrior.next_position()
+                # position = warrior.next_position()
+                position += 1
                 if position == self._core.size:
                     position = warrior.set_position(0)
-            self._core.set_position(start_position)
-            warrior.set_position(start_position)
+            # self._core.set_position(warrior.start_position)
+            # warrior.set_position(warrior.start_position)
 
     def play(self):  # nie wszystko na raz
         # wywołuje grę
@@ -391,7 +399,6 @@ class Game:
             if self._warriors:
                 for warrior in self._warriors:
                     print(f'Warrior: {warrior.get_name()}')
-                    warrior.set_position(self._core.get_position())
                     position = warrior.position
                     if position == self._core.size:
                         position = warrior.set_position(0)
@@ -401,9 +408,10 @@ class Game:
                     except WarriorLosses:
                         self.result = f'Warrior {warrior.get_name()} lost'
                         break  # ?
+                    warrior.set_position(self._core.get_position())
                     # position = warrior.next_position()  # usunęć i zmieniać  w core
-                    if round > 50:
-                        answer = input('Round is over 50. Proceed?(y/n)')
+                    if round > 100:
+                        answer = input('Round is over 100. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
