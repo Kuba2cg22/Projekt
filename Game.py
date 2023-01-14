@@ -20,7 +20,7 @@ def main():
     instructions_4 = Read_from_file('wojownik_4.txt').get_instructions()
     warrior_4 = Warrior('Asia', instructions_4, 2)
 
-    warriors = [warrior_4]
+    warriors = [warrior_1]
 
     core_1 = Core(10)
 
@@ -32,7 +32,7 @@ def main():
 
     game_1.play()
 
-    # core_1.visualize()
+    core_1.visualize()
 
 
 if __name__ == "__main__":

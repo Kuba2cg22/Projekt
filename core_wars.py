@@ -75,6 +75,9 @@ class Instruction:  # potrzebne
     def value_2(self):
         return self.instruction[2][1][1]
 
+    def set_value_2(self, new_value):
+        self.instruction[2][1][1] = new_value
+
     def comment(self):
         return self.instruction[3]
 
@@ -99,16 +102,15 @@ class MOV(Instruction):  # w klasach
         super().__init__(instruction)
         self.position = position
         self.memory = memory
+        self.core_size = len(self.memory)
 
     def run(self):
-        # operands = self.instruction.operands()
-        destination_index = self.position + int(self.instruction.value_2())
-        source_index = self.position + int(self.instruction.value_1())
-        core_size = len(self.memory)
-        while destination_index >= core_size:  # tuu
-            destination_index -= core_size
-        while source_index >= core_size:
-            source_index -= core_size
+        destination_index = self.position + self.instruction.value_2()
+        source_index = self.position + self.instruction.value_1()
+        while destination_index >= self.core_size:  # tuu
+            destination_index -= self.core_size
+        while source_index >= self.core_size:
+            source_index -= self.core_size
         self.memory[destination_index] = self.memory[source_index]
 
 
@@ -117,9 +119,20 @@ class ADD(Instruction):  # w klasach
         super().__init__(instruction)
         self.position = position
         self.memory = memory
+        self.core_size = len(self.memory)
 
     def run(self):
-        pass
+        destination_index = self.position + self.instruction.value_2()
+
+        while destination_index >= self.core_size:
+            destination_index -= self.core_size
+
+        second_instruction = self.memory[destination_index]
+
+        if self.instruction.mode_1() == '#':
+            second_instruction.set_value_2(
+                self.instruction.value_1() + second_instruction.value_2()
+                )
 
 
 class JMP(Instruction):
@@ -248,9 +261,9 @@ class Read_from_file:
                 self.line[1] = self.line[1].replace(',', '')
             try:
                 int(self.line[1])
-                mode_1, value_1 = None, self.line[1]
+                mode_1, value_1 = None, int(self.line[1])
             except ValueError:
-                mode_1, value_1 = self.line[1][0], self.line[1][1:]
+                mode_1, value_1 = self.line[1][0], int(self.line[1][1:])
         except IndexError:
             mode_1, value_1 = None, None
         operand_1 = [mode_1, value_1]
@@ -259,9 +272,9 @@ class Read_from_file:
             self.line[2]
             try:
                 int(self.line[2])
-                mode_2, value_2 = None, self.line[2]
+                mode_2, value_2 = None, int(self.line[2])
             except ValueError:
-                mode_2, value_2 = self.line[2][0], self.line[2][1:]
+                mode_2, value_2 = self.line[2][0], int(self.line[2][1:])
         except IndexError:
             mode_2, value_2 = None, None
         operand_2 = [mode_2, value_2]
