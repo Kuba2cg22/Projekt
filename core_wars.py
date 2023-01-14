@@ -32,21 +32,29 @@ class Core:
 
     def visualize(self):  # nie tu na zewnątrz
         # implementacja wizualizacji stanu rdzenia
+        core_memory = []
         for index, register in enumerate(self.memory):
-            print(index, register.instruction)
+            core_memory.append((index, register.instruction))
+        return core_memory
 
     def put_instruction_into_core(self, position, instruction):
         self.position = position
         self.memory[position] = instruction
 
+    def set_position(self, new_position):
+        self.position = new_position
+
     def next_position(self):
         self.position += 1
+
+    def get_position(self):
+        return self.position
 
     def execute_instruction(self, position):
         # implementacja wykonywania instrukcji na rdzeniu
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
-        method = mnemonics[mnemonic](instruction, position, self.memory)
+        method = mnemonics[mnemonic](instruction, position, self)  # czy można samo self
         method.run()
 
 
@@ -87,10 +95,10 @@ class Instruction:  # potrzebne
 
 class DAT(Instruction):  # w klasach
 
-    def __init__(self, instruction, position, memory):
+    def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
-        self.memory = memory
+        self.core = core
 
     def run(self):
         raise WarriorLosses
@@ -98,51 +106,69 @@ class DAT(Instruction):  # w klasach
 
 class MOV(Instruction):  # w klasach
 
-    def __init__(self, instruction, position, memory):
+    def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
-        self.memory = memory
-        self.core_size = len(self.memory)
+        self.core = core
 
     def run(self):
-        destination_index = self.position + self.instruction.value_2()
-        source_index = self.position + self.instruction.value_1()
-        while destination_index >= self.core_size:  # tuu
-            destination_index -= self.core_size
-        while source_index >= self.core_size:
-            source_index -= self.core_size
-        self.memory[destination_index] = self.memory[source_index]
+        if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
+            destination_index = self.position + self.instruction.value_2()
+            source_index = self.position + self.instruction.value_1()
+            while destination_index >= self.core.get_size():  # tuu
+                destination_index -= self.core.get_size()
+            while source_index >= self.core.get_size():
+                source_index -= self.core.get_size()
+
+            self.core.memory[destination_index] = self.core.memory[source_index]
+
+        if self.instruction.mode_2() == '@':
+            source_index = self.position + self.instruction.value_1()
+            second_instruction = self.core.memory[source_index]
+
+            destination_index = self.position + second_instruction.value_2() + self.instruction.value_2()
+
+            while destination_index >= self.core.get_size():  # tuu
+                destination_index -= self.core.get_size()
+            while source_index >= self.core.get_size():
+                source_index -= self.core.get_size()
+
+            self.core.memory[destination_index] = self.core.memory[source_index]
+
+        self.core.next_position()
 
 
 class ADD(Instruction):  # w klasach
-    def __init__(self, instruction, position, memory):
+    def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
-        self.memory = memory
-        self.core_size = len(self.memory)
+        self.core = core
 
     def run(self):
         destination_index = self.position + self.instruction.value_2()
 
-        while destination_index >= self.core_size:
-            destination_index -= self.core_size
+        while destination_index >= self.core.get_size():
+            destination_index -= self.core.get_size()
 
-        second_instruction = self.memory[destination_index]
+        second_instruction = self.core.memory[destination_index]
 
-        if self.instruction.mode_1() == '#':
+        if self.instruction.mode_1() == '#':  # czego ustawia wszystko
             second_instruction.set_value_2(
                 self.instruction.value_1() + second_instruction.value_2()
                 )
 
+        self.core.next_position()
+
 
 class JMP(Instruction):
-    def __init__(self, instruction, position, memory):
+    def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
-        self.memory = memory
+        self.core = core
 
     def run(self):
-        pass
+        new_position = self.instruction.value_1() + self.position
+        self.core.set_position(new_position)
 
 
 def i():
@@ -353,6 +379,7 @@ class Game:
                 position = warrior.next_position()
                 if position == self._core.size:
                     position = warrior.set_position(0)
+            self._core.set_position(start_position)
             warrior.set_position(start_position)
 
     def play(self):  # nie wszystko na raz
@@ -364,17 +391,19 @@ class Game:
             if self._warriors:
                 for warrior in self._warriors:
                     print(f'Warrior: {warrior.get_name()}')
+                    warrior.set_position(self._core.get_position())
                     position = warrior.position
+                    if position == self._core.size:
+                        position = warrior.set_position(0)
                     try:
                         self._core.execute_instruction(position)
+                        # aktualizacja pozycji
                     except WarriorLosses:
                         self.result = f'Warrior {warrior.get_name()} lost'
                         break  # ?
-                    position = warrior.next_position()
-                    if position == self._core.size:
-                        position = warrior.set_position(0)
-                    if round > 100:
-                        answer = input('Round is over 100. Proceed?(y/n)')
+                    # position = warrior.next_position()  # usunęć i zmieniać  w core
+                    if round > 50:
+                        answer = input('Round is over 50. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
