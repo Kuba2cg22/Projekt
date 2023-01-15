@@ -1,4 +1,4 @@
-from Errors import IncorectPath
+# from Errors import IncorectPath
 
 from core_wars import Instruction
 
@@ -12,8 +12,8 @@ class Read_from_file:
                 for line in file_handle:
                     self.line = line.rstrip().split()
                     self.lines.append(self.line)
-        except:
-            raise IncorectPath
+        except FileNotFoundError:  # sprawzić
+            return 'Wrong path'
 
     def get_mnemonic(self):
         mnemonic = self.line[0][:3]

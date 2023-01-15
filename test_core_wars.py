@@ -1,6 +1,14 @@
 # +=''Dd""{}
 
-from core_wars import Core, Instruction, Read_from_file, Warrior, Game, IncorectPath, NoWarriorInGame, WrongPosition
+from Errors import (
+    IncorectPath,
+    # NoWarriorInGame,
+    # WrongPosition
+)
+from reader import Read_from_file
+
+from core_wars import Core, Instruction, Warrior, Game
+
 import pytest
 
 
@@ -126,8 +134,6 @@ def test_execute_MOV_instruction_core():
         (2, ['MOV', None, [[None, 0], [None, 1]], None]),
         ]
 
-
-
 # def test_create_game():
 #     warrior_1 = Warrior('wojownik_1.txt','Jaś', 3)
 #     warrior_2 = Warrior('wojownik_2.txt','Asia', 2)
@@ -150,10 +156,10 @@ def test_execute_MOV_instruction_core():
 #         ['DAT', '', [None, None], [None, None], None]
 #         ]
 
+
 def test_create_empty_game():
     warriors = []
     core_1 = []
     game = Game(warriors, core_1)
     assert game._warriors == []
     assert game._core == []
-

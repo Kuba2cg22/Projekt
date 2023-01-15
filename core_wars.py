@@ -50,7 +50,8 @@ class Core:
         self.set_position(position)
         instruction = self.memory[position]
         mnemonic = instruction.mnemonic()
-        method = mnemonics[mnemonic](instruction, position, self)  # czy można samo self
+        method = mnemonics[mnemonic](instruction, position, self)
+        # czy można samo self
         method.run()
 
 
@@ -206,62 +207,44 @@ class SUB(Instruction):
 
 def i():
 
-
-
-
     class MUL(Instruction):
         pass
-
 
     class DIV(Instruction):
         pass
 
-
     class MOD(Instruction):
         pass
-
-
-
 
     class JMZ(Instruction):
         pass
 
-
     class JMN(Instruction):
         pass
-
 
     class DJN(Instruction):
         pass
 
-
     class SPL(Instruction):
         pass
-
 
     class CMP(Instruction):
         pass
 
-
     class SEQ(Instruction):
         pass
-
 
     class SNE(Instruction):
         pass
 
-
     class SLT(Instruction):
         pass
-
 
     class LDP(Instruction):
         pass
 
-
     class STP(Instruction):
         pass
-
 
     class NOP(Instruction):
         pass
@@ -365,7 +348,8 @@ class Game:
                         self.result = f'Warrior {warrior.get_name()} lost'
                         break  # ?
                     warrior.set_position(self._core.get_position())
-                    # position = warrior.next_position()  # usunęć i zmieniać  w core
+                    # position = warrior.next_position()
+                    # # usunęć i zmieniać  w core
                     if round > 100:
                         answer = input('Round is over 100. Proceed?(y/n)')
                         if answer == 'y':
