@@ -74,6 +74,9 @@ class Instruction:  # potrzebne
     def value_1(self):
         return self.instruction[2][0][1]
 
+    def set_value_1(self, new_value):
+        self.instruction[2][0][1] = new_value
+
     def mode_2(self):
         return self.instruction[2][1][0]
 
@@ -117,34 +120,17 @@ class MOV(Instruction):  # w klasach
         instruction_to_copy = self.core.memory[source_index]
         copy_of_instuction = copy.deepcopy(instruction_to_copy)
 
-        if self.instruction.mode_1() is None and self.instruction.mode_2() is None:  # lub $
+        if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
+            # lub $
             destination_index = self.position + self.instruction.value_2()
-            # source_index = self.position + self.instruction.value_1()
-
-            while destination_index >= self.core.get_size():
-                destination_index -= self.core.get_size()
-
-            self.core.memory[destination_index] = copy_of_instuction
 
         elif self.instruction.mode_2() == '*':
             destination_index = self.position + instruction_to_copy.value_1()\
                 + self.instruction.value_2()
 
-            while destination_index >= self.core.get_size():
-                destination_index -= self.core.get_size()
-
-            self.core.memory[destination_index] = copy_of_instuction
-
         elif self.instruction.mode_2() == '@':
-
             destination_index = self.position + instruction_to_copy.value_2()\
                 + self.instruction.value_2()
-
-            while destination_index >= self.core.get_size():
-                destination_index -= self.core.get_size()
-
-            self.core.memory[destination_index] = copy_of_instuction
-            # nowy obiekt
 
         elif self.instruction.mode_2() == '<':
 
@@ -155,11 +141,15 @@ class MOV(Instruction):  # w klasach
             destination_index = self.position + instruction_to_copy.value_2()\
                 + needed_instruction.value_2()
 
-            while destination_index >= self.core.get_size():
-                destination_index -= self.core.get_size()
+        elif self.instruction.mode_2() == '}':
 
-            self.core.memory[destination_index] = copy_of_instuction
+            destination_index = self.position + instruction_to_copy.value_1()\
+                + self.instruction.value_2() + self.instruction.value_1()
 
+        while destination_index >= self.core.get_size():
+            destination_index -= self.core.get_size()
+
+        self.core.memory[destination_index] = copy_of_instuction
         self.core.next_position()
 
 
@@ -178,7 +168,8 @@ class ADD(Instruction):  # w klasach
         instruction_to_copy = self.core.memory[destination_index]
 
         if self.instruction.mode_1() == '#':  # czego ustawia wszystko
-            new_value = self.instruction.value_1() + instruction_to_copy.value_2()
+            new_value = self.instruction.value_1() +\
+                 instruction_to_copy.value_2()
             instruction_to_copy.set_value_2(new_value)
 
         self.core.next_position()
@@ -291,7 +282,6 @@ class Warrior:  # bez ścieżki
 
     def set_position(self, new_position):
         self.position = new_position
-        # return self.position
 
     def next_position(self):
         self.position += 1
