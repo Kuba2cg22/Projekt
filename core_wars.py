@@ -139,9 +139,30 @@ class MOV(Instruction):  # w klasach
                 ]
 
             destination_index = self.position + instruction_to_copy.value_2()\
-                + needed_instruction.value_2()
+                + needed_instruction.value_2() + self.instruction.value_1()
+
+        elif self.instruction.mode_2() == '>':
+
+            needed_instruction = self.core.memory[
+                self.position + instruction_to_copy.value_2()
+                ]
+
+            destination_index = self.position + instruction_to_copy.value_2()\
+                + self.instruction.value_2() + self.instruction.value_1()
+
+        elif self.instruction.mode_2() == '{':
+
+            needed_instruction = self.core.memory[
+                self.position + instruction_to_copy.value_2()
+                ]
+
+            destination_index = self.position + instruction_to_copy.value_2()\
+                + needed_instruction.value_1() + self.instruction.value_1()
 
         elif self.instruction.mode_2() == '}':
+            needed_instruction = self.core.memory[
+                self.position + instruction_to_copy.value_2()
+                ]
 
             destination_index = self.position + instruction_to_copy.value_1()\
                 + self.instruction.value_2() + self.instruction.value_1()
@@ -167,7 +188,7 @@ class ADD(Instruction):  # w klasach
 
         instruction_to_copy = self.core.memory[destination_index]
 
-        if self.instruction.mode_1() == '#':  # czego ustawia wszystko
+        if self.instruction.mode_1() == '#':
             new_value = self.instruction.value_1() +\
                  instruction_to_copy.value_2()
             instruction_to_copy.set_value_2(new_value)
@@ -186,7 +207,45 @@ class JMP(Instruction):
         self.core.set_position(new_position)
 
 
+class JMZ(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+        new_position = self.instruction.value_1() + self.position
+        if new_position == 0:
+            self.core.set_position(new_position)
+        else:
+            self.core.set_position(new_position)
+
+
+class JMN(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+        new_position = self.instruction.value_1() + self.position
+        if new_position != 0:
+            self.core.set_position(new_position)
+        else:
+            self.core.set_position(new_position)
+
+
 class SUB(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+        self.core.next_position()
+
+
+class NOP(Instruction):
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -207,12 +266,6 @@ def i():
     class MOD(Instruction):
         pass
 
-    class JMZ(Instruction):
-        pass
-
-    class JMN(Instruction):
-        pass
-
     class DJN(Instruction):
         pass
 
@@ -231,15 +284,6 @@ def i():
     class SLT(Instruction):
         pass
 
-    class LDP(Instruction):
-        pass
-
-    class STP(Instruction):
-        pass
-
-    class NOP(Instruction):
-        pass
-
 
 mnemonics = {
     'DAT': DAT,
@@ -250,17 +294,15 @@ mnemonics = {
     # 'MUL': MUL,
     # 'DIV': DIV,
     # 'MOD': MOD,
-    # 'JMZ': JMZ,
-    # 'JMN': JMN,
+    'JMZ': JMZ,
+    'JMN': JMN,
     # 'DJN': DJN,
     # 'SPL': SPL,
     # 'CMP': CMP,
     # 'SEQ': SEQ,
     # 'SNE': SNE,
     # 'SLT': SLT,
-    # 'LDP': LDP,
-    # 'STP': STP,
-    # 'NOP': NOP
+    'NOP': NOP
 }
 
 
