@@ -4,7 +4,8 @@ import copy
 
 from Errors import (
     NoWarriorInGame,
-    WarriorLosses
+    WarriorLosses,
+    SplitProces
 )
 
 
@@ -50,12 +51,14 @@ class Core:
 
     def execute_instruction(self, position):
         # implementacja wykonywania instrukcji na rdzeniu
-        self.set_position(position)
-        instruction = self.memory[position]
-        mnemonic = instruction.mnemonic()
-        method = mnemonics[mnemonic](instruction, position, self)
-        # czy można samo self
-        method.run()
+        try:
+            self.set_position(position)
+            instruction = self.memory[position]
+            mnemonic = instruction.mnemonic()
+            method = mnemonics[mnemonic](instruction, position, self)
+            method.run()
+        except SplitProces:
+            self.execute_instruction(self.position)
 
 
 class Instruction:  # potrzebne
@@ -123,8 +126,13 @@ class MOV(Instruction):  # w klasach
         instruction_to_copy = self.core.memory[source_index]
         copy_of_instuction = copy.deepcopy(instruction_to_copy)
 
+        pointed_index = self.position + instruction_to_copy.value_2()
+
+        while pointed_index >= self.core.get_size():
+            pointed_index -= self.core.get_size()
+
         pointed_instruction = self.core.memory[
-                self.position + instruction_to_copy.value_2()
+                pointed_index
                 ]
 
         if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
@@ -378,28 +386,117 @@ class MOD(Instruction):
         self.core.next_position()
 
 
-def i():
+class SPL(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
 
-    class SPL(Instruction):
-        pass
+    def run(self):
+        new_position = self.instruction.value_1() + self.position
+        self.core.set_position(new_position)
+        raise SplitProces
 
-    class CMP(Instruction):
-        pass
 
-    class SEQ(Instruction):
-        pass
+class CMP(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
 
-    class SNE(Instruction):
-        pass
+    def run(self):
 
-    class SLT(Instruction):
-        pass
+        source_index = self.position + self.instruction.value_1()
+        destination_index = self.position + self.instruction.value_2()
+
+        instruction_1 = self.core.memory[source_index]
+        instruction_2 = self.core.memory[destination_index]
+
+        is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
+        is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
+        is_operands = bool(instruction_1.operands() == instruction_2.operands())
+        is_comments = bool(instruction_1.comment() == instruction_2.comment())
+
+        if is_mnemonics and is_modifiers and is_operands and is_comments:
+            self.core.set_position(self.position + 1)
+
+        self.core.next_position()
+
+
+class SEQ(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        source_index = self.position + self.instruction.value_1()
+        destination_index = self.position + self.instruction.value_2()
+
+        instruction_1 = self.core.memory[source_index]
+        instruction_2 = self.core.memory[destination_index]
+
+        is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
+        is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
+        is_operands = bool(instruction_1.operands() == instruction_2.operands())
+        is_comments = bool(instruction_1.comment() == instruction_2.comment())
+
+        if is_mnemonics and is_modifiers and is_operands and is_comments:
+            self.core.set_position(self.position + 1)
+
+        self.core.next_position()
+
+
+class SNE(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        source_index = self.position + self.instruction.value_1()
+        destination_index = self.position + self.instruction.value_2()
+
+        instruction_1 = self.core.memory[source_index]
+        instruction_2 = self.core.memory[destination_index]
+
+        is_mnemonics = bool(instruction_1.mnemonic() != instruction_2.mnemonic())
+        is_modifiers = bool(instruction_1.modifier() != instruction_2.modifier())
+        is_operands = bool(instruction_1.operands() != instruction_2.operands())
+        is_comments = bool(instruction_1.comment() != instruction_2.comment())
+
+        if is_mnemonics and is_modifiers and is_operands and is_comments:
+            self.core.set_position(self.position + 1)
+
+        self.core.next_position()
+
+
+class SLT(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        value_1 = self.instruction.value_1()
+        value_2 = self.instruction.value_2()
+
+        if value_1 < value_2:
+            self.core.set_position(self.position + 1)
+
+        self.core.next_position()
 
 
 def calculate_destination_index(self):
-    pointed_instruction = self.core.memory[
-            self.position + self.instruction.value_2()
-            ]
+    pointed_index = self.position + self.instruction.value_2()
+
+    while pointed_index >= self.core.get_size():
+        pointed_index -= self.core.get_size()
+
+    pointed_instruction = self.core.memory[pointed_index]
 
     if self.instruction.mode_2() is None:
         # lub $
@@ -436,6 +533,7 @@ def calculate_destination_index(self):
 
     return destination_index
 
+
 mnemonics = {
     'DAT': DAT,
     'MOV': MOV,
@@ -448,11 +546,11 @@ mnemonics = {
     'JMZ': JMZ,
     'JMN': JMN,
     'DJN': DJN,
-    # 'SPL': SPL,
-    # 'CMP': CMP,
-    # 'SEQ': SEQ,
-    # 'SNE': SNE,
-    # 'SLT': SLT,
+    'SPL': SPL,
+    'CMP': CMP,
+    'SEQ': SEQ,
+    'SNE': SNE,
+    'SLT': SLT,
     'NOP': NOP
 }
 

@@ -9,8 +9,8 @@ from reader import Read_from_file
 
 def main():
 
-    # instructions_1 = Read_from_file('wojownik_1.txt').get_instructions()
-    # warrior_1 = Warrior('Jakub', instructions_1, 3)
+    instructions_1 = Read_from_file('wojownik_1.txt').get_instructions()
+    warrior_1 = Warrior('Jakub', instructions_1, 3)
 
     # instructions_2 = Read_from_file('wojownik_2.txt').get_instructions()
     # warrior_2 = Warrior('Jaś', instructions_2, 10)
@@ -21,7 +21,7 @@ def main():
     instructions_4 = Read_from_file('wojownik_4.txt').get_instructions()
     warrior_4 = Warrior('Asia', instructions_4, 2)
 
-    warriors = [warrior_4]
+    warriors = [warrior_1, warrior_4]
 
     core_1 = Core(16)
 

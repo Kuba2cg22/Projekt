@@ -13,3 +13,7 @@ class WrongPosition(Exception):
 
 class WarriorLosses(Exception):
     pass
+
+
+class SplitProces(Exception):
+    pass
