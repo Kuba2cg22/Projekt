@@ -183,49 +183,21 @@ class ADD(Instruction):  # w klasach
 
     def run(self):
 
-        pointed_instruction = self.core.memory[
-                self.position + self.instruction.value_2()
-                ]
-
-        if self.instruction.mode_2() is None:
-            # lub $
-            destination_index = self.position + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '*':
-            destination_index = self.position + pointed_instruction.value_1()\
-                + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '@':
-            destination_index = self.position + pointed_instruction.value_2()\
-                + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '<':
-
-            destination_index = self.position + pointed_instruction.value_2()
-
-        elif self.instruction.mode_2() == '>':
-
-            destination_index = self.position + pointed_instruction.value_2()\
-                 + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '{':
-
-            destination_index = self.position + pointed_instruction.value_1()
-
-        elif self.instruction.mode_2() == '}':
-
-            destination_index = self.position + pointed_instruction.value_1()\
-                 + self.instruction.value_2()
-
-        while destination_index >= self.core.get_size():
-            destination_index -= self.core.get_size()
-
-        instruction_to_change = self.core.memory[destination_index]
+        instruction_to_change = self.core.memory[
+            calculate_destination_index(self)
+            ]
 
         if self.instruction.mode_1() == '#':
             new_value = self.instruction.value_1() +\
                  instruction_to_change.value_2()
 
+        modes_to_A_field = ['*', '{', '}']
+        modes_to_B_field = ['@', '<', '>', None]
+
+        if self.instruction.mode_2() in modes_to_A_field:
+            instruction_to_change.set_value_1(new_value)
+
+        elif self.instruction.mode_2() in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -270,6 +242,20 @@ class JMN(Instruction):
             self.core.set_position(new_position)
 
 
+class DJN(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+        new_position = self.instruction.value_1() + self.position - 1
+        if new_position != 0:
+            self.core.set_position(new_position)
+        else:
+            self.core.set_position(new_position)
+
+
 class SUB(Instruction):
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
@@ -277,6 +263,24 @@ class SUB(Instruction):
         self.core = core
 
     def run(self):
+
+        instruction_to_change = self.core.memory[
+            calculate_destination_index(self)
+            ]
+
+        if self.instruction.mode_1() == '#':
+            new_value = instruction_to_change.value_2() -\
+                self.instruction.value_1()
+
+        modes_to_A_field = ['*', '{', '}']
+        modes_to_B_field = ['@', '<', '>', None]
+
+        if self.instruction.mode_2() in modes_to_A_field:
+            instruction_to_change.set_value_1(new_value)
+
+        elif self.instruction.mode_2() in modes_to_B_field:
+            instruction_to_change.set_value_2(new_value)
+
         self.core.next_position()
 
 
@@ -290,19 +294,91 @@ class NOP(Instruction):
         self.core.next_position()
 
 
+class MUL(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        instruction_to_change = self.core.memory[
+            calculate_destination_index(self)
+            ]
+
+        if self.instruction.mode_1() == '#':
+            new_value = instruction_to_change.value_2() *\
+                self.instruction.value_1()
+
+        modes_to_A_field = ['*', '{', '}']
+        modes_to_B_field = ['@', '<', '>', None]
+
+        if self.instruction.mode_2() in modes_to_A_field:
+            instruction_to_change.set_value_1(new_value)
+
+        elif self.instruction.mode_2() in modes_to_B_field:
+            instruction_to_change.set_value_2(new_value)
+
+        self.core.next_position()
+
+
+class DIV(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        instruction_to_change = self.core.memory[
+            calculate_destination_index(self)
+            ]
+
+        if self.instruction.mode_1() == '#':
+            new_value = instruction_to_change.value_2() //\
+                self.instruction.value_1()
+
+        modes_to_A_field = ['*', '{', '}']
+        modes_to_B_field = ['@', '<', '>', None]
+
+        if self.instruction.mode_2() in modes_to_A_field:
+            instruction_to_change.set_value_1(new_value)
+
+        elif self.instruction.mode_2() in modes_to_B_field:
+            instruction_to_change.set_value_2(new_value)
+
+        self.core.next_position()
+
+
+class MOD(Instruction):
+    def __init__(self, instruction, position, core):
+        super().__init__(instruction)
+        self.position = position
+        self.core = core
+
+    def run(self):
+
+        instruction_to_change = self.core.memory[
+            calculate_destination_index(self)
+            ]
+
+        if self.instruction.mode_1() == '#':
+            new_value = instruction_to_change.value_2() %\
+                self.instruction.value_1()
+
+        modes_to_A_field = ['*', '{', '}']
+        modes_to_B_field = ['@', '<', '>', None]
+
+        if self.instruction.mode_2() in modes_to_A_field:
+            instruction_to_change.set_value_1(new_value)
+
+        elif self.instruction.mode_2() in modes_to_B_field:
+            instruction_to_change.set_value_2(new_value)
+
+        self.core.next_position()
+
+
 def i():
-
-    class MUL(Instruction):
-        pass
-
-    class DIV(Instruction):
-        pass
-
-    class MOD(Instruction):
-        pass
-
-    class DJN(Instruction):
-        pass
 
     class SPL(Instruction):
         pass
@@ -320,18 +396,58 @@ def i():
         pass
 
 
+def calculate_destination_index(self):
+    pointed_instruction = self.core.memory[
+            self.position + self.instruction.value_2()
+            ]
+
+    if self.instruction.mode_2() is None:
+        # lub $
+        destination_index = self.position + self.instruction.value_2()
+
+    elif self.instruction.mode_2() == '*':
+        destination_index = self.position + pointed_instruction.value_1()\
+            + self.instruction.value_2()
+
+    elif self.instruction.mode_2() == '@':
+        destination_index = self.position + pointed_instruction.value_2()\
+            + self.instruction.value_2()
+
+    elif self.instruction.mode_2() == '<':
+
+        destination_index = self.position + pointed_instruction.value_2()
+
+    elif self.instruction.mode_2() == '>':
+
+        destination_index = self.position + pointed_instruction.value_2()\
+                + self.instruction.value_2()
+
+    elif self.instruction.mode_2() == '{':
+
+        destination_index = self.position + pointed_instruction.value_1()
+
+    elif self.instruction.mode_2() == '}':
+
+        destination_index = self.position + pointed_instruction.value_1()\
+                + self.instruction.value_2()
+
+    while destination_index >= self.core.get_size():
+        destination_index -= self.core.get_size()
+
+    return destination_index
+
 mnemonics = {
     'DAT': DAT,
     'MOV': MOV,
     'ADD': ADD,
     'JMP': JMP,
     'SUB': SUB,
-    # 'MUL': MUL,
-    # 'DIV': DIV,
-    # 'MOD': MOD,
+    'MUL': MUL,
+    'DIV': DIV,
+    'MOD': MOD,
     'JMZ': JMZ,
     'JMN': JMN,
-    # 'DJN': DJN,
+    'DJN': DJN,
     # 'SPL': SPL,
     # 'CMP': CMP,
     # 'SEQ': SEQ,
