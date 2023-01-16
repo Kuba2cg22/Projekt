@@ -120,6 +120,10 @@ class MOV(Instruction):  # w klasach
         instruction_to_copy = self.core.memory[source_index]
         copy_of_instuction = copy.deepcopy(instruction_to_copy)
 
+        pointed_instruction = self.core.memory[
+                self.position + instruction_to_copy.value_2()
+                ]
+
         if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
             # lub $
             destination_index = self.position + self.instruction.value_2()
@@ -133,39 +137,20 @@ class MOV(Instruction):  # w klasach
                 + self.instruction.value_2()
 
         elif self.instruction.mode_2() == '<':
-
-            needed_instruction = self.core.memory[
-                self.position + instruction_to_copy.value_2()
-                ]
-
             destination_index = self.position + instruction_to_copy.value_2()\
-                + needed_instruction.value_2() + self.instruction.value_1()
+                + pointed_instruction.value_2()  # + self.instruction.value_1()
 
         elif self.instruction.mode_2() == '>':
-
-            needed_instruction = self.core.memory[
-                self.position + instruction_to_copy.value_2()
-                ]
-
             destination_index = self.position + instruction_to_copy.value_2()\
-                + self.instruction.value_2() + self.instruction.value_1()
+                + pointed_instruction.value_2() + self.instruction.value_2()
 
         elif self.instruction.mode_2() == '{':
-
-            needed_instruction = self.core.memory[
-                self.position + instruction_to_copy.value_2()
-                ]
-
-            destination_index = self.position + instruction_to_copy.value_2()\
-                + needed_instruction.value_1() + self.instruction.value_1()
+            destination_index = self.position + instruction_to_copy.value_1()\
+                + pointed_instruction.value_1()  # + self.instruction.value_2()
 
         elif self.instruction.mode_2() == '}':
-            needed_instruction = self.core.memory[
-                self.position + instruction_to_copy.value_2()
-                ]
-
             destination_index = self.position + instruction_to_copy.value_1()\
-                + self.instruction.value_2() + self.instruction.value_1()
+                + pointed_instruction.value_1() + self.instruction.value_2()
 
         while destination_index >= self.core.get_size():
             destination_index -= self.core.get_size()
@@ -181,17 +166,51 @@ class ADD(Instruction):  # w klasach
         self.core = core
 
     def run(self):
-        destination_index = self.position + self.instruction.value_2()
+
+        pointed_instruction = self.core.memory[
+                self.position + self.instruction.value_2()
+                ]
+
+        if self.instruction.mode_2() is None:
+            # lub $
+            destination_index = self.position + self.instruction.value_2()
+
+        elif self.instruction.mode_2() == '*':
+            destination_index = self.position + pointed_instruction.value_1()\
+                + self.instruction.value_2()
+
+        elif self.instruction.mode_2() == '@':
+            destination_index = self.position + pointed_instruction.value_2()\
+                + self.instruction.value_2()
+
+        elif self.instruction.mode_2() == '<':
+
+            destination_index = self.position + pointed_instruction.value_2()
+
+        elif self.instruction.mode_2() == '>':
+
+            destination_index = self.position + pointed_instruction.value_2()\
+                 + self.instruction.value_2()
+
+        elif self.instruction.mode_2() == '{':
+
+            destination_index = self.position + pointed_instruction.value_1()
+
+        elif self.instruction.mode_2() == '}':
+
+            destination_index = self.position + pointed_instruction.value_1()\
+                 + self.instruction.value_2()
 
         while destination_index >= self.core.get_size():
             destination_index -= self.core.get_size()
 
-        instruction_to_copy = self.core.memory[destination_index]
+        instruction_to_change = self.core.memory[destination_index]
 
         if self.instruction.mode_1() == '#':
             new_value = self.instruction.value_1() +\
-                 instruction_to_copy.value_2()
-            instruction_to_copy.set_value_2(new_value)
+                 instruction_to_change.value_2()
+
+            instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
 
