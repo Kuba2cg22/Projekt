@@ -11,12 +11,15 @@ from Errors import (
 class Core:
     def __init__(self, size):
         self.size = size
+        self.memory = []
         mnemonic = 'DAT'
         modifier = None
         operands = [[None, 0], [None, 0]]
         comment = None
         instruction = Instruction([mnemonic, modifier, operands, comment])
-        self.memory = [instruction] * size
+        for x in range(size):
+            copy_of_instuction = copy.deepcopy(instruction)
+            self.memory.append(copy_of_instuction)
 
     def get_size(self):
         return self.size
@@ -156,6 +159,19 @@ class MOV(Instruction):  # w klasach
             destination_index -= self.core.get_size()
 
         self.core.memory[destination_index] = copy_of_instuction
+
+        if self.instruction.mode_2() == '}':
+            self.core.memory[destination_index].set_value_1(
+                self.core.memory[destination_index].value_1()
+                + self.instruction.value_2()
+            )
+
+        elif self.instruction.mode_2() == '>':
+            self.core.memory[destination_index].set_value_2(
+                self.core.memory[destination_index].value_2()
+                + self.instruction.value_2()
+            )
+
         self.core.next_position()
 
 
