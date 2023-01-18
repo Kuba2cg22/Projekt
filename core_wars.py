@@ -1,6 +1,8 @@
 # +=''dD""{}
 
 import copy
+# import matplotlib.pyplot as plt
+# from matplotlib.animation import FuncAnimation
 
 from Errors import (
     NoWarriorInGame,
@@ -25,12 +27,18 @@ class Core:
     def get_size(self):
         return self.size
 
+    def get_memory(self):
+        return self.memory
+
     def visualize(self):  # nie tu na zewnątrz
         # implementacja wizualizacji stanu rdzenia
         core_memory = []
         for index, register in enumerate(self.memory):
             core_memory.append((index, register.instruction))
         return core_memory
+
+    # def visualize_2(self):
+    #     visualization = Visualize(self.memory())
 
     def put_instruction_into_core(self, position, instruction):
         self.position = position
@@ -59,6 +67,24 @@ class Core:
             method.run()
         except SplitProces:
             self.execute_instruction(self.position)
+
+
+# class Visualize:
+#     def __init__(self, core) -> None:
+#         self.core = core
+
+
+#     # Tworzymy funkcję, która będzie rysować aktualny stan rdzenia
+#     def update(frame):
+#         positions = [self.core.get_memory()]
+#         plt.cla()
+#         plt.scatter(positions[frame][0], positions[frame][1])
+
+#     # Tworzymy obiekt animacji
+#     ani = FuncAnimation(plt.gcf(), update, frames=range(len(positions)), repeat=True)
+
+#     # Wyświetlamy animację
+#     plt.show()
 
 
 class Instruction:  # potrzebne
