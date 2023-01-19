@@ -12,7 +12,7 @@ from Errors import (
 
 
 class Core:
-    def __init__(self, size):
+    def __init__(self, size):  # inaczej
         self.size = size
         self.memory = []
         mnemonic = 'DAT'
@@ -32,6 +32,7 @@ class Core:
 
     def visualize(self):  # nie tu na zewnątrz
         # implementacja wizualizacji stanu rdzenia
+        # w termonalu
         core_memory = []
         for index, register in enumerate(self.memory):
             core_memory.append((index, register.instruction))
@@ -97,7 +98,7 @@ class Instruction:  # potrzebne
     def modifier(self):
         return self.instruction[1]
 
-    def operands(self):
+    def operands(self):  # z tego korzystać
         return self.instruction[2]
 
     def mode_1(self):
@@ -138,6 +139,7 @@ class DAT(Instruction):  # w klasach
 
 class MOV(Instruction):  # w klasach
     # kopiuje cały obiekt
+    # też funkcję
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -651,7 +653,7 @@ class Game:
                     try:
                         self._core.execute_instruction(position)
                         # aktualizacja pozycji
-                    except WarriorLosses:
+                    except WarriorLosses:  # nie tak
                         self.result = f'Warrior {warrior.get_name()} lost'
                         break  # ?
                     warrior.set_position(self._core.get_position())
