@@ -154,45 +154,7 @@ class MOV(Instruction):  # w klasach
         instruction_to_copy = self.core.memory[source_index]
         copy_of_instuction = copy.deepcopy(instruction_to_copy)
 
-        pointed_index = self.position + instruction_to_copy.value_2()
-
-        while pointed_index >= self.core.get_size():
-            pointed_index -= self.core.get_size()
-
-        pointed_instruction = self.core.memory[
-                pointed_index
-                ]
-
-        if self.instruction.mode_1() is None and self.instruction.mode_2() is None:
-            # lub $
-            destination_index = self.position + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '*':
-            destination_index = self.position + instruction_to_copy.value_1()\
-                + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '@':
-            destination_index = self.position + instruction_to_copy.value_2()\
-                + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '<':
-            destination_index = self.position + instruction_to_copy.value_2()\
-                + pointed_instruction.value_2()  # + self.instruction.value_1()
-
-        elif self.instruction.mode_2() == '>':
-            destination_index = self.position + instruction_to_copy.value_2()\
-                + pointed_instruction.value_2() + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '{':
-            destination_index = self.position + instruction_to_copy.value_1()\
-                + pointed_instruction.value_1()  # + self.instruction.value_2()
-
-        elif self.instruction.mode_2() == '}':
-            destination_index = self.position + instruction_to_copy.value_1()\
-                + pointed_instruction.value_1() + self.instruction.value_2()
-
-        while destination_index >= self.core.get_size():
-            destination_index -= self.core.get_size()
+        destination_index = calculate_destination_index(self)
 
         self.core.memory[destination_index] = copy_of_instuction
 
