@@ -69,8 +69,6 @@ class Core:
 
         if SplitProces:
             self.execute_instruction(self.position)
-            global SplitProces
-            SplitProces = False
 
 
 # class Visualize:
@@ -136,6 +134,8 @@ class DAT(Instruction):  # w klasach
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
         global game_result
         game_result = 'lost'
 
@@ -149,6 +149,9 @@ class MOV(Instruction):  # w klasach
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
+
         source_index = self.position + self.instruction.operands()[0][1]
 
         while source_index >= self.core.get_size():
@@ -183,6 +186,8 @@ class ADD(Instruction):  # w klasach
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         instruction_to_change = self.core.memory[
             calculate_destination_index(self)
@@ -211,6 +216,8 @@ class JMP(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
         new_position = self.instruction.operands()[0][1] + self.position
         self.core.set_position(new_position)
 
@@ -222,6 +229,9 @@ class JMZ(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
+
         new_position = self.instruction.operands()[0][1] + self.position
         if new_position == 0:
             self.core.set_position(new_position)
@@ -236,6 +246,9 @@ class JMN(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
+
         new_position = self.instruction.operands()[0][1] + self.position
         if new_position != 0:
             self.core.set_position(new_position)
@@ -264,6 +277,8 @@ class SUB(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         instruction_to_change = self.core.memory[
             calculate_destination_index(self)
@@ -292,6 +307,9 @@ class NOP(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
+
         self.core.next_position()
 
 
@@ -302,6 +320,8 @@ class MUL(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         instruction_to_change = self.core.memory[
             calculate_destination_index(self)
@@ -330,6 +350,8 @@ class DIV(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         instruction_to_change = self.core.memory[
             calculate_destination_index(self)
@@ -358,6 +380,8 @@ class MOD(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         instruction_to_change = self.core.memory[
             calculate_destination_index(self)
@@ -399,6 +423,8 @@ class CMP(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
         destination_index = self.position + self.instruction.operands()[1][1]
@@ -424,6 +450,8 @@ class SEQ(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
         destination_index = self.position + self.instruction.operands()[1][1]
@@ -449,6 +477,8 @@ class SNE(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
         destination_index = self.position + self.instruction.operands()[1][1]
@@ -474,6 +504,8 @@ class SLT(Instruction):
         self.core = core
 
     def run(self):
+        global SplitProces
+        SplitProces = False
 
         value_1 = self.instruction.operands()[0][1]
         value_2 = self.instruction.operands()[1][1]

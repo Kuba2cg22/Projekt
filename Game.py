@@ -31,6 +31,7 @@ def main():
 
     game_1.prepare_game()
 
+    print('Ready core: ')
     core_memory_1 = core_1.visualize()
 
     for register in core_memory_1:
