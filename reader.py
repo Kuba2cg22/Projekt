@@ -2,6 +2,27 @@
 
 from core_wars import Instruction
 
+from Errors import (
+    IncorrectMnemonicsError,
+    IncorrectModifiersError,
+    IncorrectOperandsError,
+    IncorrectValueError
+)
+
+list_of_mnemonics = [
+    'DAT', 'MOV', 'ADD', 'JMP', 'SUB', 'MUL',
+    'DIV', 'MOD', 'JMZ', 'JMN', 'DJN', 'SPL',
+    'CMP', 'SEQ', 'SNE', 'SLT', 'NOP'
+]
+list_of_modifiers = [
+    '.AB', '.A', '.B', '.BA',
+    '.F', '.X', '.I', None
+]
+list_of_modes = [
+    '#', '$', '*', '@', '}',
+    '{', '<', '>', None
+]
+
 
 class Read_from_file:
     def __init__(self, path) -> None:
@@ -17,12 +38,16 @@ class Read_from_file:
 
     def get_mnemonic(self):
         mnemonic = self.line[0][:3]
+        if mnemonic not in list_of_mnemonics:
+            raise IncorrectMnemonicsError
         return mnemonic
 
     def get_modifier(self):
         modifier = self.line[0][3:]
         if len(modifier) == 0:
             modifier = None
+        if modifier not in list_of_modifiers:
+            raise IncorrectModifiersError
         return modifier
 
     def get_operands(self):
@@ -36,6 +61,11 @@ class Read_from_file:
                 mode_1, value_1 = self.line[1][0], int(self.line[1][1:])
         except IndexError:
             mode_1, value_1 = None, None
+        if mode_1 not in list_of_modes:
+            raise IncorrectOperandsError
+        if type(value_1) != int:
+            if value_1 is not None:
+                raise IncorrectValueError
         operand_1 = [mode_1, value_1]
 
         try:
@@ -47,6 +77,11 @@ class Read_from_file:
                 mode_2, value_2 = self.line[2][0], int(self.line[2][1:])
         except IndexError:
             mode_2, value_2 = None, None
+        if mode_2 not in list_of_modes:
+            raise IncorrectOperandsError
+        if type(value_2) != int:
+            if value_2 is not None:
+                raise IncorrectValueError
         operand_2 = [mode_2, value_2]
 
         operands = [operand_1, operand_2]

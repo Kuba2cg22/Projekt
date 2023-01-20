@@ -45,4 +45,4 @@ c = [1, 2]
 
 u, i = c
 
-print(u,i)
+print(type(c)==list)

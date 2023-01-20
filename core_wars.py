@@ -38,17 +38,6 @@ class Core:
     def get_memory(self):
         return self.memory
 
-    def visualize(self):  # nie tu na zewnątrz
-        # implementacja wizualizacji stanu rdzenia
-        # w termonalu
-        core_memory = []
-        for index, register in enumerate(self.memory):
-            core_memory.append((index, register.instruction))
-        return core_memory
-
-    # def visualize_2(self):
-    #     visualization = Visualize(self.memory())
-
     def put_instruction_into_core(self, position, instruction):
         self.position = position
         self.memory[position] = instruction
@@ -92,19 +81,19 @@ class Instruction:
     def modifier(self):
         return self.instruction[1]
 
-    def operands(self):  # z tego korzystać
+    def operands(self):
         return self.instruction[2]
 
-    def operands_A(self):  # z tego korzystać
+    def operands_A(self):
         return self.instruction[2][0]
 
-    def set_operands_A(self, new_operands_A):  # z tego korzystać
+    def set_operands_A(self, new_operands_A):
         self.instruction[2][0] = new_operands_A
 
-    def operands_B(self):  # z tego korzystać
+    def operands_B(self):
         return self.instruction[2][1]
 
-    def set_operands_B(self, new_operands_B):  # z tego korzystać
+    def set_operands_B(self, new_operands_B):
         self.instruction[2][1] = new_operands_B
 
     def mode_1(self):
@@ -662,18 +651,42 @@ class CMP(Instruction):
         SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
-        destination_index = self.position + self.instruction.operands()[1][1]
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+        destination_index = calculate_destination_index(self)
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
 
-        is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
-        is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
-        is_operands = bool(instruction_1.operands() == instruction_2.operands())
-        is_comments = bool(instruction_1.comment() == instruction_2.comment())
+        if self.instruction.operands()[0][0] == '#':
+            if self.instruction.modifier() == '.AB':
+                value_1 = self.instruction.operands()[0][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 == value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                value_1 = self.instruction.operands()[1][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 == value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] is None and self.instruction.operands()[0][0] is None:
+            if self.instruction.modifier() == '.I':
+                is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
+                is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
+                is_operands = bool(instruction_1.operands() == instruction_2.operands())
+                is_comments = bool(instruction_1.comment() == instruction_2.comment())
 
-        if is_mnemonics and is_modifiers and is_operands and is_comments:
-            self.core.set_position(self.position + 1)
+                if is_mnemonics and is_modifiers and is_operands and is_comments:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        else:
+            raise IncorrectOperandsError
 
         self.core.next_position()
 
@@ -693,18 +706,42 @@ class SEQ(Instruction):
         SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
-        destination_index = self.position + self.instruction.operands()[1][1]
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+        destination_index = calculate_destination_index(self)
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
 
-        is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
-        is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
-        is_operands = bool(instruction_1.operands() == instruction_2.operands())
-        is_comments = bool(instruction_1.comment() == instruction_2.comment())
+        if self.instruction.operands()[0][0] == '#':
+            if self.instruction.modifier() == '.AB':
+                value_1 = self.instruction.operands()[0][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 == value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                value_1 = self.instruction.operands()[1][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 == value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] is None and self.instruction.operands()[0][0] is None:
+            if self.instruction.modifier() == '.I':
+                is_mnemonics = bool(instruction_1.mnemonic() == instruction_2.mnemonic())
+                is_modifiers = bool(instruction_1.modifier() == instruction_2.modifier())
+                is_operands = bool(instruction_1.operands() == instruction_2.operands())
+                is_comments = bool(instruction_1.comment() == instruction_2.comment())
 
-        if is_mnemonics and is_modifiers and is_operands and is_comments:
-            self.core.set_position(self.position + 1)
+                if is_mnemonics and is_modifiers and is_operands and is_comments:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        else:
+            raise IncorrectOperandsError
 
         self.core.next_position()
 
@@ -724,18 +761,42 @@ class SNE(Instruction):
         SplitProces = False
 
         source_index = self.position + self.instruction.operands()[0][1]
-        destination_index = self.position + self.instruction.operands()[1][1]
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+        destination_index = calculate_destination_index(self)
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
 
-        is_mnemonics = bool(instruction_1.mnemonic() != instruction_2.mnemonic())
-        is_modifiers = bool(instruction_1.modifier() != instruction_2.modifier())
-        is_operands = bool(instruction_1.operands() != instruction_2.operands())
-        is_comments = bool(instruction_1.comment() != instruction_2.comment())
+        if self.instruction.operands()[0][0] == '#':
+            if self.instruction.modifier() == '.AB':
+                value_1 = self.instruction.operands()[0][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 != value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                value_1 = self.instruction.operands()[1][1]
+                value_2 = instruction_2.operands()[1][1]
+                if value_1 != value_2:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.operands()[1][0] is None and self.instruction.operands()[0][0] is None:
+            if self.instruction.modifier() == '.I':
+                is_mnemonics = bool(instruction_1.mnemonic() != instruction_2.mnemonic())
+                is_modifiers = bool(instruction_1.modifier() != instruction_2.modifier())
+                is_operands = bool(instruction_1.operands() != instruction_2.operands())
+                is_comments = bool(instruction_1.comment() != instruction_2.comment())
 
-        if is_mnemonics and is_modifiers and is_operands and is_comments:
-            self.core.set_position(self.position + 1)
+                if is_mnemonics and is_modifiers and is_operands and is_comments:
+                    self.core.set_position(self.position + 1)
+            else:
+                raise IncorrectModifiersError
+        else:
+            raise IncorrectOperandsError
 
         self.core.next_position()
 
@@ -792,6 +853,7 @@ class SLT(Instruction):
 
 def calculate_destination_index(self):
     '''
+    calculates the destination index according to addressing modes
     '''
     pointed_index = self.position + self.instruction.operands()[1][1]
 
@@ -801,7 +863,7 @@ def calculate_destination_index(self):
     pointed_instruction = self.core.memory[pointed_index]
 
     if self.instruction.operands()[1][0] is None:
-        # lub $
+
         destination_index = self.position + self.instruction.operands()[1][1]
 
     elif self.instruction.operands()[1][0] == '*':
@@ -829,6 +891,8 @@ def calculate_destination_index(self):
 
         destination_index = self.position + pointed_instruction.operands()[0][1]\
                 + self.instruction.operands()[1][1]
+    else:
+        destination_index = self.position + self.instruction.operands()[1][1]
 
     while destination_index >= self.core.get_size():
         destination_index -= self.core.get_size()
@@ -899,24 +963,19 @@ class Game:
                 new_position = warrior.position - self._core.size
                 warrior.start_position = warrior.set_position(new_position)
 
-            # start_position = warrior.position
             position = warrior.position
 
             for instruction in warrior.instructions:
                 self._core.put_instruction_into_core(position, instruction)
-                # position = warrior.next_position()
                 position += 1
                 if position == self._core.size:
                     position = warrior.set_position(0)
-            # self._core.set_position(warrior.start_position)
-            # warrior.set_position(warrior.start_position)
 
     def play(self):
         '''
         starts the game
         '''
         round = 1
-        print('Starting Core Wars')
         global game_result
         while game_result == 'undecided':
             print(f'Round: {round}')
@@ -928,7 +987,6 @@ class Game:
                         position = warrior.set_position(0)
                     self._core.execute_instruction(position)
                     warrior.set_position(self._core.get_position())
-
                     if round > 100:
                         answer = input('Round is over 100. Proceed?(y/n)')
                         if answer == 'y':
