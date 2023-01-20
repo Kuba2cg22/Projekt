@@ -4,11 +4,11 @@ import copy
 # import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 
-from Errors import (
-    NoWarriorInGame,
-    WarriorLosses,
-    SplitProces
-)
+from Errors import NoWarriorInGame
+
+
+SplitProces = False
+game_result = 'undecided'
 
 
 class Core:
@@ -60,14 +60,17 @@ class Core:
 
     def execute_instruction(self, position):
         # implementacja wykonywania instrukcji na rdzeniu
-        try:
-            self.set_position(position)
-            instruction = self.memory[position]
-            mnemonic = instruction.mnemonic()
-            method = mnemonics[mnemonic](instruction, position, self)
-            method.run()
-        except SplitProces:
+        global SplitProces
+        self.set_position(position)
+        instruction = self.memory[position]
+        mnemonic = instruction.mnemonic()
+        method = mnemonics[mnemonic](instruction, position, self)
+        method.run()
+
+        if SplitProces:
             self.execute_instruction(self.position)
+            global SplitProces
+            SplitProces = False
 
 
 # class Visualize:
@@ -86,7 +89,6 @@ class Core:
 
 #     # Wyświetlamy animację
 #     plt.show()
-
 
 class Instruction:  # potrzebne
     def __init__(self, instruction):
@@ -134,7 +136,8 @@ class DAT(Instruction):  # w klasach
         self.core = core
 
     def run(self):
-        raise WarriorLosses
+        global game_result
+        game_result = 'lost'
 
 
 class MOV(Instruction):  # w klasach
@@ -146,7 +149,7 @@ class MOV(Instruction):  # w klasach
         self.core = core
 
     def run(self):
-        source_index = self.position + self.instruction.value_1()
+        source_index = self.position + self.instruction.operands()[0][1]
 
         while source_index >= self.core.get_size():
             source_index -= self.core.get_size()
@@ -158,16 +161,16 @@ class MOV(Instruction):  # w klasach
 
         self.core.memory[destination_index] = copy_of_instuction
 
-        if self.instruction.mode_2() == '}':
+        if self.instruction.operands()[1][0] == '}':
             self.core.memory[destination_index].set_value_1(
-                self.core.memory[destination_index].value_1()
-                + self.instruction.value_2()
+                self.core.memory[destination_index].operands()[0][1]
+                + self.instruction.operands()[1][1]
             )
 
-        elif self.instruction.mode_2() == '>':
+        elif self.instruction.operands()[1][0] == '>':
             self.core.memory[destination_index].set_value_2(
-                self.core.memory[destination_index].value_2()
-                + self.instruction.value_2()
+                self.core.memory[destination_index].operands()[1][1]
+                + self.instruction.operands()[1][1]
             )
 
         self.core.next_position()
@@ -185,17 +188,17 @@ class ADD(Instruction):  # w klasach
             calculate_destination_index(self)
             ]
 
-        if self.instruction.mode_1() == '#':
-            new_value = self.instruction.value_1() +\
-                 instruction_to_change.value_2()
+        if self.instruction.operands()[0][0] == '#':
+            new_value = self.instruction.operands()[0][1] +\
+                 instruction_to_change.operands()[1][1]
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
-        if self.instruction.mode_2() in modes_to_A_field:
+        if self.instruction.operands()[1][0] in modes_to_A_field:
             instruction_to_change.set_value_1(new_value)
 
-        elif self.instruction.mode_2() in modes_to_B_field:
+        elif self.instruction.operands()[1][0] in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -208,7 +211,7 @@ class JMP(Instruction):
         self.core = core
 
     def run(self):
-        new_position = self.instruction.value_1() + self.position
+        new_position = self.instruction.operands()[0][1] + self.position
         self.core.set_position(new_position)
 
 
@@ -219,7 +222,7 @@ class JMZ(Instruction):
         self.core = core
 
     def run(self):
-        new_position = self.instruction.value_1() + self.position
+        new_position = self.instruction.operands()[0][1] + self.position
         if new_position == 0:
             self.core.set_position(new_position)
         else:
@@ -233,7 +236,7 @@ class JMN(Instruction):
         self.core = core
 
     def run(self):
-        new_position = self.instruction.value_1() + self.position
+        new_position = self.instruction.operands()[0][1] + self.position
         if new_position != 0:
             self.core.set_position(new_position)
         else:
@@ -247,7 +250,7 @@ class DJN(Instruction):
         self.core = core
 
     def run(self):
-        new_position = self.instruction.value_1() + self.position - 1
+        new_position = self.instruction.operands()[0][1] + self.position - 1
         if new_position != 0:
             self.core.set_position(new_position)
         else:
@@ -266,17 +269,17 @@ class SUB(Instruction):
             calculate_destination_index(self)
             ]
 
-        if self.instruction.mode_1() == '#':
-            new_value = instruction_to_change.value_2() -\
-                self.instruction.value_1()
+        if self.instruction.operands()[0][0] == '#':
+            new_value = instruction_to_change.operands()[1][1] -\
+                self.instruction.operands()[0][1]
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
-        if self.instruction.mode_2() in modes_to_A_field:
+        if self.instruction.operands()[1][0] in modes_to_A_field:
             instruction_to_change.set_value_1(new_value)
 
-        elif self.instruction.mode_2() in modes_to_B_field:
+        elif self.instruction.operands()[1][0] in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -304,17 +307,17 @@ class MUL(Instruction):
             calculate_destination_index(self)
             ]
 
-        if self.instruction.mode_1() == '#':
-            new_value = instruction_to_change.value_2() *\
-                self.instruction.value_1()
+        if self.instruction.operands()[0][0] == '#':
+            new_value = instruction_to_change.operands()[1][1] *\
+                self.instruction.operands()[0][1]
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
-        if self.instruction.mode_2() in modes_to_A_field:
+        if self.instruction.operands()[1][0] in modes_to_A_field:
             instruction_to_change.set_value_1(new_value)
 
-        elif self.instruction.mode_2() in modes_to_B_field:
+        elif self.instruction.operands()[1][0] in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -332,17 +335,17 @@ class DIV(Instruction):
             calculate_destination_index(self)
             ]
 
-        if self.instruction.mode_1() == '#':
-            new_value = instruction_to_change.value_2() //\
-                self.instruction.value_1()
+        if self.instruction.operands()[0][0] == '#':
+            new_value = instruction_to_change.operands()[1][1] //\
+                self.instruction.operands()[0][1]
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
-        if self.instruction.mode_2() in modes_to_A_field:
+        if self.instruction.operands()[1][0] in modes_to_A_field:
             instruction_to_change.set_value_1(new_value)
 
-        elif self.instruction.mode_2() in modes_to_B_field:
+        elif self.instruction.operands()[1][0] in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -360,17 +363,17 @@ class MOD(Instruction):
             calculate_destination_index(self)
             ]
 
-        if self.instruction.mode_1() == '#':
-            new_value = instruction_to_change.value_2() %\
-                self.instruction.value_1()
+        if self.instruction.operands()[0][0] == '#':
+            new_value = instruction_to_change.operands()[1][1] %\
+                self.instruction.operands()[0][1]
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
-        if self.instruction.mode_2() in modes_to_A_field:
+        if self.instruction.operands()[1][0] in modes_to_A_field:
             instruction_to_change.set_value_1(new_value)
 
-        elif self.instruction.mode_2() in modes_to_B_field:
+        elif self.instruction.operands()[1][0] in modes_to_B_field:
             instruction_to_change.set_value_2(new_value)
 
         self.core.next_position()
@@ -383,9 +386,10 @@ class SPL(Instruction):
         self.core = core
 
     def run(self):
-        new_position = self.instruction.value_1() + self.position
+        new_position = self.instruction.operands()[0][1] + self.position
         self.core.set_position(new_position)
-        raise SplitProces
+        global SplitProces
+        SplitProces = True
 
 
 class CMP(Instruction):
@@ -396,8 +400,8 @@ class CMP(Instruction):
 
     def run(self):
 
-        source_index = self.position + self.instruction.value_1()
-        destination_index = self.position + self.instruction.value_2()
+        source_index = self.position + self.instruction.operands()[0][1]
+        destination_index = self.position + self.instruction.operands()[1][1]
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
@@ -421,8 +425,8 @@ class SEQ(Instruction):
 
     def run(self):
 
-        source_index = self.position + self.instruction.value_1()
-        destination_index = self.position + self.instruction.value_2()
+        source_index = self.position + self.instruction.operands()[0][1]
+        destination_index = self.position + self.instruction.operands()[1][1]
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
@@ -446,8 +450,8 @@ class SNE(Instruction):
 
     def run(self):
 
-        source_index = self.position + self.instruction.value_1()
-        destination_index = self.position + self.instruction.value_2()
+        source_index = self.position + self.instruction.operands()[0][1]
+        destination_index = self.position + self.instruction.operands()[1][1]
 
         instruction_1 = self.core.memory[source_index]
         instruction_2 = self.core.memory[destination_index]
@@ -471,8 +475,8 @@ class SLT(Instruction):
 
     def run(self):
 
-        value_1 = self.instruction.value_1()
-        value_2 = self.instruction.value_2()
+        value_1 = self.instruction.operands()[0][1]
+        value_2 = self.instruction.operands()[1][1]
 
         if value_1 < value_2:
             self.core.set_position(self.position + 1)
@@ -481,42 +485,42 @@ class SLT(Instruction):
 
 
 def calculate_destination_index(self):
-    pointed_index = self.position + self.instruction.value_2()
+    pointed_index = self.position + self.instruction.operands()[1][1]
 
     while pointed_index >= self.core.get_size():
         pointed_index -= self.core.get_size()
 
     pointed_instruction = self.core.memory[pointed_index]
 
-    if self.instruction.mode_2() is None:
+    if self.instruction.operands()[1][0] is None:
         # lub $
-        destination_index = self.position + self.instruction.value_2()
+        destination_index = self.position + self.instruction.operands()[1][1]
 
-    elif self.instruction.mode_2() == '*':
-        destination_index = self.position + pointed_instruction.value_1()\
-            + self.instruction.value_2()
+    elif self.instruction.operands()[1][0] == '*':
+        destination_index = self.position + pointed_instruction.operands()[0][1]\
+            + self.instruction.operands()[1][1]
 
-    elif self.instruction.mode_2() == '@':
-        destination_index = self.position + pointed_instruction.value_2()\
-            + self.instruction.value_2()
+    elif self.instruction.operands()[1][0] == '@':
+        destination_index = self.position + pointed_instruction.operands()[1][1]\
+            + self.instruction.operands()[1][1]
 
-    elif self.instruction.mode_2() == '<':
+    elif self.instruction.operands()[1][0] == '<':
 
-        destination_index = self.position + pointed_instruction.value_2()
+        destination_index = self.position + pointed_instruction.operands()[1][1]
 
-    elif self.instruction.mode_2() == '>':
+    elif self.instruction.operands()[1][0] == '>':
 
-        destination_index = self.position + pointed_instruction.value_2()\
-                + self.instruction.value_2()
+        destination_index = self.position + pointed_instruction.operands()[1][1]\
+                + self.instruction.operands()[1][1]
 
-    elif self.instruction.mode_2() == '{':
+    elif self.instruction.operands()[1][0] == '{':
 
-        destination_index = self.position + pointed_instruction.value_1()
+        destination_index = self.position + pointed_instruction.operands()[0][1]
 
-    elif self.instruction.mode_2() == '}':
+    elif self.instruction.operands()[1][0] == '}':
 
-        destination_index = self.position + pointed_instruction.value_1()\
-                + self.instruction.value_2()
+        destination_index = self.position + pointed_instruction.operands()[0][1]\
+                + self.instruction.operands()[1][1]
 
     while destination_index >= self.core.get_size():
         destination_index -= self.core.get_size()
@@ -575,7 +579,6 @@ class Game:
     def __init__(self, core, warriors) -> None:
         self._warriors = warriors if warriors else []
         self._core = core if core else []
-        self.result = 'undecided'
 
     def prepare_game(self):
         # inicjuje rdzeń
@@ -604,7 +607,8 @@ class Game:
         # wywołuje grę
         round = 1
         print('Starting Core Wars')
-        while self.result == 'undecided':
+        global game_result
+        while game_result == 'undecided':
             print(f'Round: {round}')
             if self._warriors:
                 for warrior in self._warriors:
@@ -612,23 +616,16 @@ class Game:
                     position = warrior.position
                     if position == self._core.size:
                         position = warrior.set_position(0)
-                    try:
-                        self._core.execute_instruction(position)
-                        # aktualizacja pozycji
-                    except WarriorLosses:  # nie tak
-                        self.result = f'Warrior {warrior.get_name()} lost'
-                        break  # ?
+                    self._core.execute_instruction(position)
                     warrior.set_position(self._core.get_position())
-                    # position = warrior.next_position()
-                    # # usunęć i zmieniać  w core
+
                     if round > 100:
                         answer = input('Round is over 100. Proceed?(y/n)')
                         if answer == 'y':
                             continue
                         else:
-                            self.result = 'Its draw'
-                            break  # ?
+                            game_result = 'drew'
             else:
                 raise NoWarriorInGame
             round += 1
-        print(f'Game result: {self.result}')
+        print(f'Game result: Warrior {warrior.get_name()} {game_result}.')

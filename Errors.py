@@ -9,11 +9,3 @@ class NoWarriorInGame(Exception):
 
 class WrongPosition(Exception):
     pass
-
-
-class WarriorLosses(Exception):
-    pass
-
-
-class SplitProces(Exception):
-    pass
