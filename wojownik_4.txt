@@ -1,1 +1,3 @@
-MOV.AB 4, 5
+MOV.AB 1, 2
+ADD #4, 3
+MOV 2, @2

@@ -4,7 +4,7 @@ import copy
 # import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 
-from Errors import NoWarriorInGame
+from Errors import NoWarriorInGame, IncorrectModifiersError
 
 
 SplitProces = False
@@ -160,6 +160,32 @@ class MOV(Instruction):  # w klasach
             self.core.memory[destination_index].set_operands_B(
                 instruction_to_copy.operands_A()
             )
+        elif self.instruction.modifier() == '.A':
+            self.core.memory[destination_index].set_operands_A(
+                instruction_to_copy.operands_A()
+            )
+        elif self.instruction.modifier() == '.B':
+            self.core.memory[destination_index].set_operands_B(
+                instruction_to_copy.operands_B()
+            )
+        elif self.instruction.modifier() == '.BA':
+            self.core.memory[destination_index].set_operands_A(
+                instruction_to_copy.operands_B()
+            )
+        elif self.instruction.modifier() == '.F':
+            self.core.memory[destination_index].set_operands_A(
+                instruction_to_copy.operands_A()
+            )
+            self.core.memory[destination_index].set_operands_B(
+                instruction_to_copy.operands_B()
+            )
+        elif self.instruction.modifier() == '.X':
+            self.core.memory[destination_index].set_operands_A(
+                instruction_to_copy.operands_B()
+            )
+            self.core.memory[destination_index].set_operands_B(
+                instruction_to_copy.operands_A()
+            )
         else:
             self.core.memory[destination_index] = copy_of_instuction
 
@@ -215,6 +241,8 @@ class JMP(Instruction):
         self.core = core
 
     def run(self):
+        if self.instruction.modifier() is not None:
+            raise IncorrectModifiersError
         global SplitProces
         SplitProces = False
         new_position = self.instruction.operands()[0][1] + self.position
@@ -228,6 +256,8 @@ class JMZ(Instruction):
         self.core = core
 
     def run(self):
+        if self.instruction.modifier() is not None:
+            raise IncorrectModifiersError
         global SplitProces
         SplitProces = False
 
@@ -245,6 +275,8 @@ class JMN(Instruction):
         self.core = core
 
     def run(self):
+        if self.instruction.modifier() is not None:
+            raise IncorrectModifiersError
         global SplitProces
         SplitProces = False
 
@@ -409,6 +441,8 @@ class SPL(Instruction):
         self.core = core
 
     def run(self):
+        if self.instruction.modifier() is not None:
+            raise IncorrectModifiersError
         new_position = self.instruction.operands()[0][1] + self.position
         self.core.set_position(new_position)
         global SplitProces

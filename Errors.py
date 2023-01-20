@@ -9,3 +9,7 @@ class NoWarriorInGame(Exception):
 
 class WrongPosition(Exception):
     pass
+
+
+class IncorrectModifiersError(Exception):
+    pass

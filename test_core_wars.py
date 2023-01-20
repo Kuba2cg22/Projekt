@@ -23,6 +23,11 @@ def test_create_file_with_wrong_path():
         file_1 = Read_from_file('wojownik1.txt')
 
 
+def test_create_file():
+    global file_1
+    file_1 = Read_from_file('wojownik_1.txt')
+
+
 def test_warrior():
     instructions = []
     warrior_1 = Warrior('Kuba', instructions, 10)
@@ -39,7 +44,7 @@ def test_warrior_no_position():
     assert warrior_1.position == 0
 
 
-def test_instuction():
+def test_instruction():
     mnemonic = 'MOV'
     modifier = None
     operands = [[None, 3], ['#', 2]]
@@ -51,19 +56,19 @@ def test_instuction():
     assert instruction.comment() is None
 
 
-def test_MOV():
-    global core_1, warriors
-    mnemonic = 'MOV'
-    modifier = None
-    operands = [[None, 0], ['#', 1]]
-    comment = None
-    instruction = Instruction([mnemonic, modifier, operands, comment])
-    instructions = [instruction]
-    core_1 = Core(
-        generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
-        )
-    warrior_1 = Warrior('Kuba', instructions, 4)
-    warriors = [warrior_1]
+# def test_MOV():
+#     global core_1, warriors
+#     mnemonic = 'MOV'
+#     modifier = None
+#     operands = [[None, 0], ['#', 1]]
+#     comment = None
+#     instruction = Instruction([mnemonic, modifier, operands, comment])
+#     instructions = [instruction]
+#     core_1 = Core(
+#         generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
+#         )
+#     warrior_1 = Warrior('Kuba', instructions, 4)
+#     warriors = [warrior_1]
 
 # def test_list_of_instuctions():
 #     file_1 = Read_from_file('wojownik_1.txt')
@@ -148,6 +153,26 @@ def test_execute_MOV_instruction_core():
         (0, ['MOV', None, [[None, 0], [None, 1]], None]),
         (1, ['MOV', None, [[None, 0], [None, 1]], None]),
         (2, ['MOV', None, [[None, 0], [None, 1]], None]),
+        ]
+
+
+def test_execute_MOV_AB_instruction_core():
+    core_1 = Core(
+        generate_instruction(3, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
+
+    instructions = Read_from_file('wojownik_4.txt').get_instructions()
+    warrior_4 = Warrior('Kuba', instructions, 0)
+
+    game_1 = Game(core_1, [warrior_4])
+    game_1.prepare_game()
+
+    core_1.execute_instruction(warrior_4.get_position())
+
+    assert core_1.visualize() == [
+        (0, ['MOV', '.AB', [[None, 1], [None, 2]], None]),
+        (1, ['ADD', None, [['#', 4], [None, 3]], None]),
+        (2, ['MOV', None, [[None, 2], ['#', 4]], None]),
         ]
 
 # def test_create_game():
