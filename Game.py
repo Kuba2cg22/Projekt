@@ -1,7 +1,8 @@
 from core_wars import (
     Core,
     Warrior,
-    Game
+    Game,
+    generate_instruction
 )
 
 # from matplotlib import animation
@@ -12,7 +13,7 @@ from reader import Read_from_file
 def main():
 
     instructions_1 = Read_from_file('wojownik_1.txt').get_instructions()
-    warrior_1 = Warrior('Jakub', instructions_1, 3)
+    warrior_1 = Warrior('Jakub', instructions_1, 6)
 
     instructions_2 = Read_from_file('wojownik_2.txt').get_instructions()
     warrior_2 = Warrior('Jaś', instructions_2, 4)
@@ -23,9 +24,11 @@ def main():
     instructions_4 = Read_from_file('wojownik_4.txt').get_instructions()
     warrior_4 = Warrior('Asia', instructions_4, 2)
 
-    warriors = [warrior_4, warrior_2]
+    warriors = [warrior_4, warrior_1]
 
-    core_1 = Core(10)
+    core_1 = Core(
+        generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
 
     game_1 = Game(core_1, warriors)
 

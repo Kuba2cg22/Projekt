@@ -83,6 +83,18 @@ class Instruction:  # potrzebne
     def operands(self):  # z tego korzystać
         return self.instruction[2]
 
+    def operands_A(self):  # z tego korzystać
+        return self.instruction[2][0]
+
+    def set_operands_A(self, new_operands_A):  # z tego korzystać
+        self.instruction[2][0] = new_operands_A
+
+    def operands_B(self):  # z tego korzystać
+        return self.instruction[2][1]
+
+    def set_operands_B(self, new_operands_B):  # z tego korzystać
+        self.instruction[2][1] = new_operands_B
+
     def mode_1(self):
         return self.instruction[2][0][0]
 
@@ -144,19 +156,24 @@ class MOV(Instruction):  # w klasach
 
         destination_index = calculate_destination_index(self)
 
-        self.core.memory[destination_index] = copy_of_instuction
-
-        if self.instruction.operands()[1][0] == '}':
-            self.core.memory[destination_index].set_value_1(
-                self.core.memory[destination_index].operands()[0][1]
-                + self.instruction.operands()[1][1]
+        if self.instruction.modifier() == '.AB':
+            self.core.memory[destination_index].set_operands_B(
+                instruction_to_copy.operands_A()
             )
+        else:
+            self.core.memory[destination_index] = copy_of_instuction
 
-        elif self.instruction.operands()[1][0] == '>':
-            self.core.memory[destination_index].set_value_2(
-                self.core.memory[destination_index].operands()[1][1]
-                + self.instruction.operands()[1][1]
-            )
+            if self.instruction.operands()[1][0] == '}':
+                self.core.memory[destination_index].set_value_1(
+                    self.core.memory[destination_index].operands()[0][1]
+                    + self.instruction.operands()[1][1]
+                )
+
+            elif self.instruction.operands()[1][0] == '>':
+                self.core.memory[destination_index].set_value_2(
+                    self.core.memory[destination_index].operands()[1][1]
+                    + self.instruction.operands()[1][1]
+                )
 
         self.core.next_position()
 
@@ -643,4 +660,3 @@ class Game:
                 raise NoWarriorInGame
             round += 1
         print(f'Game result: Warrior {warrior.get_name()} {game_result}.')
-
