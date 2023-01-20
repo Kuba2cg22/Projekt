@@ -13,3 +13,7 @@ class WrongPosition(Exception):
 
 class IncorrectModifiersError(Exception):
     pass
+
+
+class IncorrectOperandsError(Exception):
+    pass

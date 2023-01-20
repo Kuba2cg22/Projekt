@@ -1,10 +1,13 @@
 # +=''dD""{}
 
 import copy
-# import matplotlib.pyplot as plt
-# from matplotlib.animation import FuncAnimation
 
-from Errors import NoWarriorInGame, IncorrectModifiersError
+
+from Errors import (
+    NoWarriorInGame,
+    IncorrectModifiersError,
+    IncorrectOperandsError
+    )
 
 
 SplitProces = False
@@ -12,11 +15,17 @@ game_result = 'undecided'
 
 
 def generate_instruction(size, instruction):
+    '''
+    generates different objects of instruction with the same parameters
+    '''
     for i in range(size):
         yield Instruction(instruction)
 
 
 class Core:
+    '''
+    Initialize the core
+    '''
     def __init__(self, instructions):
         self.memory = []
         for instruction in instructions:
@@ -70,7 +79,10 @@ class Core:
             self.execute_instruction(self.position)
 
 
-class Instruction:  # potrzebne
+class Instruction:
+    '''
+    Enables access to the parts of single instruction
+    '''
     def __init__(self, instruction):
         self.instruction = instruction
 
@@ -120,8 +132,10 @@ class Instruction:  # potrzebne
         return self.instruction
 
 
-class DAT(Instruction):  # w klasach
-
+class DAT(Instruction):
+    '''
+    data (kills the process)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -134,9 +148,10 @@ class DAT(Instruction):  # w klasach
         game_result = 'lost'
 
 
-class MOV(Instruction):  # w klasach
-    # kopiuje cały obiekt
-    # też funkcję
+class MOV(Instruction):
+    '''
+    move (copies data from one address to another)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -204,7 +219,10 @@ class MOV(Instruction):  # w klasach
         self.core.next_position()
 
 
-class ADD(Instruction):  # w klasach
+class ADD(Instruction):
+    '''
+    add (adds one number to another)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -214,13 +232,43 @@ class ADD(Instruction):  # w klasach
         global SplitProces
         SplitProces = False
 
-        instruction_to_change = self.core.memory[
-            calculate_destination_index(self)
-            ]
+        source_index = self.position + self.instruction.operands()[0][1]
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        source_instruction = self.core.memory[source_index]
+        destination_index = calculate_destination_index(self)
+        instruction_to_change = self.core.memory[destination_index]
+
+        wrong_modifiers = ['.F', '.X']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
 
         if self.instruction.operands()[0][0] == '#':
-            new_value = self.instruction.operands()[0][1] +\
-                 instruction_to_change.operands()[1][1]
+            if self.instruction.modifier() == '.AB':
+                new_value = source_instruction.operands()[0][1] +\
+                    instruction_to_change.operands()[1][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = source_instruction.operands()[0][1] +\
+                    instruction_to_change.operands()[0][1]
+            elif self.instruction.modifier() == '.BA':
+                new_value = source_instruction.operands()[1][1] +\
+                    instruction_to_change.operands()[0][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = source_instruction.operands()[0][1] +\
+                    instruction_to_change.operands()[0][1]
+            else:
+                new_value = self.instruction.operands()[0][1] +\
+                    instruction_to_change.operands()[1][1]
+
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                new_value = source_instruction.operands()[1][1] +\
+                    instruction_to_change.operands()[1][1]
+
+        else:
+            raise IncorrectOperandsError
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
@@ -235,14 +283,17 @@ class ADD(Instruction):  # w klasach
 
 
 class JMP(Instruction):
+    '''
+    jump (continues execution from another address)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
         self.core = core
 
     def run(self):
-        if self.instruction.modifier() is not None:
-            raise IncorrectModifiersError
+        if self.instruction.operands_B() != [None, None]:
+            raise IncorrectOperandsError
         global SplitProces
         SplitProces = False
         new_position = self.instruction.operands()[0][1] + self.position
@@ -250,14 +301,17 @@ class JMP(Instruction):
 
 
 class JMZ(Instruction):
+    '''
+    jump if zero (tests a number and jumps to an address if it's 0)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
         self.core = core
 
     def run(self):
-        if self.instruction.modifier() is not None:
-            raise IncorrectModifiersError
+        if self.instruction.operands_B() != [None, None]:
+            raise IncorrectOperandsError
         global SplitProces
         SplitProces = False
 
@@ -269,14 +323,17 @@ class JMZ(Instruction):
 
 
 class JMN(Instruction):
+    '''
+    jump if not zero (tests a number and jumps if it isn't 0)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
         self.core = core
 
     def run(self):
-        if self.instruction.modifier() is not None:
-            raise IncorrectModifiersError
+        if self.instruction.operands_B() != [None, None]:
+            raise IncorrectOperandsError
         global SplitProces
         SplitProces = False
 
@@ -288,12 +345,18 @@ class JMN(Instruction):
 
 
 class DJN(Instruction):
+    '''
+    decrement and jump if not zero
+    (decrements a number by one, and jumps unless the result is 0)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
         self.core = core
 
     def run(self):
+        if self.instruction.operands_B() != [None, None]:
+            raise IncorrectOperandsError
         new_position = self.instruction.operands()[0][1] + self.position - 1
         if new_position != 0:
             self.core.set_position(new_position)
@@ -302,6 +365,9 @@ class DJN(Instruction):
 
 
 class SUB(Instruction):
+    '''
+    subtract (subtracts one number from another)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -311,13 +377,43 @@ class SUB(Instruction):
         global SplitProces
         SplitProces = False
 
-        instruction_to_change = self.core.memory[
-            calculate_destination_index(self)
-            ]
+        source_index = self.position + self.instruction.operands()[0][1]
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        source_instruction = self.core.memory[source_index]
+        destination_index = calculate_destination_index(self)
+        instruction_to_change = self.core.memory[destination_index]
+
+        wrong_modifiers = ['.F', '.X']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
 
         if self.instruction.operands()[0][0] == '#':
-            new_value = instruction_to_change.operands()[1][1] -\
-                self.instruction.operands()[0][1]
+            if self.instruction.modifier() == '.AB':
+                new_value = instruction_to_change.operands()[1][1] -\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] -\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.BA':
+                new_value = instruction_to_change.operands()[0][1] -\
+                    source_instruction.operands()[1][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] -\
+                    source_instruction.operands()[0][1]
+            else:
+                new_value = instruction_to_change.operands()[1][1] -\
+                    instruction_to_change.operands()[0][1]
+
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                new_value = instruction_to_change.operands()[1][1] -\
+                    source_instruction.operands()[1][1]
+
+        else:
+            raise IncorrectOperandsError
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
@@ -332,6 +428,9 @@ class SUB(Instruction):
 
 
 class NOP(Instruction):
+    '''
+    no operation (does nothing)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -345,6 +444,9 @@ class NOP(Instruction):
 
 
 class MUL(Instruction):
+    '''
+    multiply (multiplies one number with another)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -354,13 +456,43 @@ class MUL(Instruction):
         global SplitProces
         SplitProces = False
 
-        instruction_to_change = self.core.memory[
-            calculate_destination_index(self)
-            ]
+        source_index = self.position + self.instruction.operands()[0][1]
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        source_instruction = self.core.memory[source_index]
+        destination_index = calculate_destination_index(self)
+        instruction_to_change = self.core.memory[destination_index]
+
+        wrong_modifiers = ['.F', '.X']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
 
         if self.instruction.operands()[0][0] == '#':
-            new_value = instruction_to_change.operands()[1][1] *\
-                self.instruction.operands()[0][1]
+            if self.instruction.modifier() == '.AB':
+                new_value = instruction_to_change.operands()[1][1] *\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] *\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.BA':
+                new_value = instruction_to_change.operands()[0][1] *\
+                    source_instruction.operands()[1][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] *\
+                    source_instruction.operands()[0][1]
+            else:
+                new_value = instruction_to_change.operands()[1][1] *\
+                    instruction_to_change.operands()[0][1]
+
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                new_value = instruction_to_change.operands()[1][1] *\
+                    source_instruction.operands()[1][1]
+
+        else:
+            raise IncorrectOperandsError
 
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
@@ -375,6 +507,9 @@ class MUL(Instruction):
 
 
 class DIV(Instruction):
+    '''
+    divide (divides one number with another)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -384,14 +519,43 @@ class DIV(Instruction):
         global SplitProces
         SplitProces = False
 
-        instruction_to_change = self.core.memory[
-            calculate_destination_index(self)
-            ]
+        source_index = self.position + self.instruction.operands()[0][1]
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        source_instruction = self.core.memory[source_index]
+        destination_index = calculate_destination_index(self)
+        instruction_to_change = self.core.memory[destination_index]
+
+        wrong_modifiers = ['.F', '.X']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
 
         if self.instruction.operands()[0][0] == '#':
-            new_value = instruction_to_change.operands()[1][1] //\
-                self.instruction.operands()[0][1]
+            if self.instruction.modifier() == '.AB':
+                new_value = instruction_to_change.operands()[1][1] //\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] //\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.BA':
+                new_value = instruction_to_change.operands()[0][1] //\
+                    source_instruction.operands()[1][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] //\
+                    source_instruction.operands()[0][1]
+            else:
+                new_value = instruction_to_change.operands()[1][1] //\
+                    instruction_to_change.operands()[0][1]
 
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                new_value = instruction_to_change.operands()[1][1] //\
+                    source_instruction.operands()[1][1]
+
+        else:
+            raise IncorrectOperandsError
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
@@ -405,6 +569,9 @@ class DIV(Instruction):
 
 
 class MOD(Instruction):
+    '''
+    modulus (divides one number with another and gives the remainder)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -414,14 +581,43 @@ class MOD(Instruction):
         global SplitProces
         SplitProces = False
 
-        instruction_to_change = self.core.memory[
-            calculate_destination_index(self)
-            ]
+        source_index = self.position + self.instruction.operands()[0][1]
+
+        while source_index >= self.core.get_size():
+            source_index -= self.core.get_size()
+
+        source_instruction = self.core.memory[source_index]
+        destination_index = calculate_destination_index(self)
+        instruction_to_change = self.core.memory[destination_index]
+
+        wrong_modifiers = ['.F', '.X']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
 
         if self.instruction.operands()[0][0] == '#':
-            new_value = instruction_to_change.operands()[1][1] %\
-                self.instruction.operands()[0][1]
+            if self.instruction.modifier() == '.AB':
+                new_value = instruction_to_change.operands()[1][1] %\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] %\
+                    source_instruction.operands()[0][1]
+            elif self.instruction.modifier() == '.BA':
+                new_value = instruction_to_change.operands()[0][1] %\
+                    source_instruction.operands()[1][1]
+            elif self.instruction.modifier() == '.A':
+                new_value = instruction_to_change.operands()[0][1] %\
+                    source_instruction.operands()[0][1]
+            else:
+                new_value = instruction_to_change.operands()[1][1] %\
+                    instruction_to_change.operands()[0][1]
 
+        elif self.instruction.operands()[1][0] == '#' and self.instruction.operands()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                new_value = instruction_to_change.operands()[1][1] %\
+                    source_instruction.operands()[1][1]
+
+        else:
+            raise IncorrectOperandsError
         modes_to_A_field = ['*', '{', '}']
         modes_to_B_field = ['@', '<', '>', None]
 
@@ -435,14 +631,17 @@ class MOD(Instruction):
 
 
 class SPL(Instruction):
+    '''
+    split (starts a second process at another address)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
         self.core = core
 
     def run(self):
-        if self.instruction.modifier() is not None:
-            raise IncorrectModifiersError
+        if self.instruction.operands_B() != [None, None]:
+            raise IncorrectOperandsError
         new_position = self.instruction.operands()[0][1] + self.position
         self.core.set_position(new_position)
         global SplitProces
@@ -450,6 +649,9 @@ class SPL(Instruction):
 
 
 class CMP(Instruction):
+    '''
+    compare (same as SEQ)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -477,6 +679,10 @@ class CMP(Instruction):
 
 
 class SEQ(Instruction):
+    '''
+    skip if equal(compares two instructions,
+     and skips the next instruction if they are equal)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -504,6 +710,10 @@ class SEQ(Instruction):
 
 
 class SNE(Instruction):
+    '''
+    skip if not equal (compares two instructions,
+    and skips the next instruction if they aren't equal)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -531,6 +741,10 @@ class SNE(Instruction):
 
 
 class SLT(Instruction):
+    '''
+    skip if lower than (compares two values, and skips the next instruction
+    if the first is lower than the second)
+    '''
     def __init__(self, instruction, position, core):
         super().__init__(instruction)
         self.position = position
@@ -540,8 +754,35 @@ class SLT(Instruction):
         global SplitProces
         SplitProces = False
 
-        value_1 = self.instruction.operands()[0][1]
-        value_2 = self.instruction.operands()[1][1]
+        wrong_modifiers = ['.F', '.X', '.A', '.I']
+        if self.instruction.modifier() in wrong_modifiers:
+            raise IncorrectModifiersError
+
+        if self.instruction.openends()[0][0] == '#':
+            if self.instruction.modifier() == '.AB':
+                value_1 = self.instruction.operands()[0][1]
+                value_2 = self.instruction.operands()[1][1]
+            else:
+                raise IncorrectModifiersError
+        elif self.instruction.openends()[0][0] != '#':
+            if self.instruction.modifier() == '.B':
+                source_index = self.position + self.instruction.operands()[0][1]
+
+                while source_index >= self.core.get_size():
+                    source_index -= self.core.get_size()
+
+                source_instruction = self.core.memory[source_index]
+
+                destination_index = calculate_destination_index(self)
+
+                destination_instruction = self.core.memory[destination_index]
+
+                value_1 = source_instruction.operands()[1][1]
+                value_2 = destination_instruction.operands()[1][1]
+            else:
+                raise IncorrectModifiersError
+        else:
+            raise IncorrectOperandsError
 
         if value_1 < value_2:
             self.core.set_position(self.position + 1)
@@ -550,6 +791,8 @@ class SLT(Instruction):
 
 
 def calculate_destination_index(self):
+    '''
+    '''
     pointed_index = self.position + self.instruction.operands()[1][1]
 
     while pointed_index >= self.core.get_size():
@@ -614,9 +857,9 @@ mnemonics = {
 }
 
 
-class Warrior:  # bez ścieżki
+class Warrior:
     '''
-
+    Initialize warrior with given name, instructions and strating position
     '''
     def __init__(self, name, instructions, start_position=0) -> None:
         self.name = name
@@ -640,16 +883,16 @@ class Warrior:  # bez ścieżki
 
 class Game:
     '''
+    Initialize whole core wars game
     '''
     def __init__(self, core, warriors) -> None:
         self._warriors = warriors if warriors else []
         self._core = core if core else []
 
     def prepare_game(self):
-        # inicjuje rdzeń
-        # czyta instrukcje z pliku
-        # umieszcza je na rdzeniu
-
+        '''
+        prepares core to be ready to execute instructions
+        '''
         for warrior in self._warriors:
 
             while warrior.position not in range(self._core.size):
@@ -668,8 +911,10 @@ class Game:
             # self._core.set_position(warrior.start_position)
             # warrior.set_position(warrior.start_position)
 
-    def play(self):  # nie wszystko na raz
-        # wywołuje grę
+    def play(self):
+        '''
+        starts the game
+        '''
         round = 1
         print('Starting Core Wars')
         global game_result
