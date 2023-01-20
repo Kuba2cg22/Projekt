@@ -11,18 +11,17 @@ SplitProces = False
 game_result = 'undecided'
 
 
+def generate_instruction(size, instruction):
+    for i in range(size):
+        yield Instruction(instruction)
+
+
 class Core:
-    def __init__(self, size):  # inaczej
-        self.size = size
+    def __init__(self, instructions):
         self.memory = []
-        mnemonic = 'DAT'
-        modifier = None
-        operands = [[None, 0], [None, 0]]
-        comment = None
-        instruction = Instruction([mnemonic, modifier, operands, comment])
-        for x in range(size):
-            copy_of_instuction = copy.deepcopy(instruction)
-            self.memory.append(copy_of_instuction)
+        for instruction in instructions:
+            self.memory.append(instruction)
+        self.size = len(self.memory)
 
     def get_size(self):
         return self.size
@@ -70,23 +69,6 @@ class Core:
         if SplitProces:
             self.execute_instruction(self.position)
 
-
-# class Visualize:
-#     def __init__(self, core) -> None:
-#         self.core = core
-
-
-#     # Tworzymy funkcję, która będzie rysować aktualny stan rdzenia
-#     def update(frame):
-#         positions = [self.core.get_memory()]
-#         plt.cla()
-#         plt.scatter(positions[frame][0], positions[frame][1])
-
-#     # Tworzymy obiekt animacji
-#     ani = FuncAnimation(plt.gcf(), update, frames=range(len(positions)), repeat=True)
-
-#     # Wyświetlamy animację
-#     plt.show()
 
 class Instruction:  # potrzebne
     def __init__(self, instruction):
@@ -661,3 +643,4 @@ class Game:
                 raise NoWarriorInGame
             round += 1
         print(f'Game result: Warrior {warrior.get_name()} {game_result}.')
+

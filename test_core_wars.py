@@ -7,16 +7,18 @@ from Errors import (
 )
 from reader import Read_from_file
 
-from core_wars import Core, Instruction, Warrior, Game
+from core_wars import Core, Instruction, Warrior, Game, generate_instruction
 
 import pytest
 
 
 def test_create_warrior():
+    global warrior_1
     warrior_1 = Warrior('Kuba', 10)
 
 
 def test_create_file_with_wrong_path():
+    global file_1
     with pytest.raises(IncorectPath):
         file_1 = Read_from_file('wojownik1.txt')
 
@@ -50,13 +52,16 @@ def test_instuction():
 
 
 def test_MOV():
+    global core_1, warriors
     mnemonic = 'MOV'
     modifier = None
     operands = [[None, 0], ['#', 1]]
     comment = None
     instruction = Instruction([mnemonic, modifier, operands, comment])
     instructions = [instruction]
-    core_1 = Core(10)
+    core_1 = Core(
+        generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
     warrior_1 = Warrior('Kuba', instructions, 4)
     warriors = [warrior_1]
 
@@ -71,17 +76,24 @@ def test_MOV():
 
 
 def test_create_core():
-    core_1 = Core(10)
+    global core_1
+    core_1 = Core(
+        generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
 
 
 def test_size_core():
-    core_1 = Core(10)
-    assert core_1.size == 10
+    core_1 = Core(
+        generate_instruction(10, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
+    assert len(core_1.memory) == 10
 
 
 def test_memory_empty_core():
-    core_1 = Core(3)
-    assert core_1.size == 3
+    core_1 = Core(
+        generate_instruction(3, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
+    assert len(core_1.memory) == 3
     assert core_1.visualize() == [
         (0, ['DAT', None, [[None, 0], [None, 0]], None]),
         (1, ['DAT', None, [[None, 0], [None, 0]], None]),
@@ -90,8 +102,10 @@ def test_memory_empty_core():
 
 
 def test_put_instruction_into_core():
-    core_1 = Core(3)
-    assert core_1.size == 3
+    core_1 = Core(
+        generate_instruction(3, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
+    assert len(core_1.memory) == 3
     assert core_1.visualize() == [
         (0, ['DAT', None, [[None, 0], [None, 0]], None]),
         (1, ['DAT', None, [[None, 0], [None, 0]], None]),
@@ -111,8 +125,10 @@ def test_put_instruction_into_core():
 
 
 def test_execute_MOV_instruction_core():
-    core_1 = Core(3)
-    assert core_1.size == 3
+    core_1 = Core(
+        generate_instruction(3, ['DAT', None, [[None, 0], [None, 0]], None])
+        )
+    assert len(core_1.memory) == 3
     assert core_1.visualize() == [
         (0, ['DAT', None, [[None, 0], [None, 0]], None]),
         (1, ['DAT', None, [[None, 0], [None, 0]], None]),
